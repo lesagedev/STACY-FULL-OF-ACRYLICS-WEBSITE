@@ -1,0 +1,62 @@
+import type { Translations } from "./fr";
+
+export const en: Translations = {
+  nav: {
+    about: "About",
+    gallery: "Gallery",
+    services: "Services",
+    contact: "Contact",
+  },
+  hero: {
+    badge: "Nail Prosthetist · Gel · Acrylic · Nail Art",
+    tagline: "I transform every hand into a work of art. Unique creations, custom designs and trends to enhance your nails.",
+    cta_gallery: "See my Creations",
+    cta_contact: "Book Appointment",
+    scroll: "Discover",
+  },
+  about: {
+    label: "ABOUT",
+    heading: "I am",
+    name: "Stacy.",
+    parcours: "My Journey",
+    vision: "Vision",
+    mission: "Mission",
+  },
+  gallery: {
+    label: "GALLERY",
+    heading: "My",
+    accent: "creations.",
+    sub: "Each set is a unique work of art.",
+    all: "All",
+    photos: "photos",
+  },
+  services: {
+    label: "SERVICES",
+    heading: "What I",
+    accent: "offer.",
+    sub: "Custom services to enhance your nails.",
+  },
+  contact: {
+    label: "CONTACT",
+    heading: "Want beautiful nails?",
+    accent: "Get in touch.",
+    sub: "Appointments, questions or just saying hello.",
+    whatsapp: "WhatsApp",
+    email_label: "Email",
+    location_label: "Location",
+    form_title: "Send me a message",
+    form_sub: "I read everything. Really.",
+    name_placeholder: "Your name",
+    email_placeholder: "Your email",
+    message_placeholder: "Describe your project…",
+    send: "Send",
+    sending: "Sending…",
+    sent_title: "Message sent!",
+    sent_sub: "I'll reply quickly.",
+  },
+  footer: {
+    quote: "Thanks for stopping by. Come back often — I always have new creations to show you.",
+    rights: "All rights reserved.",
+    made: "Made with love",
+  },
+};
