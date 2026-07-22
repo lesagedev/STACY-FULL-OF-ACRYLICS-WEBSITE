@@ -3,7 +3,8 @@ import type { Translations } from "./fr";
 export const en: Translations = {
   nav: {
     about: "About",
-    gallery: "Gallery",
+    shootings: "Shootings",
+    creations: "Creations",
     services: "Services",
     contact: "Contact",
   },
@@ -13,6 +14,7 @@ export const en: Translations = {
     cta_gallery: "See my Creations",
     cta_contact: "Book Appointment",
     scroll: "Discover",
+    roles: ["Nail Prosthetist", "Nail Artist", "Trend Creator", "Hand Artist"],
   },
   about: {
     label: "ABOUT",
@@ -22,19 +24,34 @@ export const en: Translations = {
     vision: "Vision",
     mission: "Mission",
   },
-  gallery: {
-    label: "GALLERY",
+  shootings: {
+    label: "SHOOTINGS",
+    heading: "My",
+    accent: "portraits.",
+    sub: "Each photoshoot captures the essence of my art.",
+  },
+  creations: {
+    label: "CREATIONS",
     heading: "My",
     accent: "creations.",
-    sub: "Each set is a unique work of art.",
+    sub: "Each set is a unique work of art, made with passion.",
     all: "All",
-    photos: "photos",
   },
   services: {
     label: "SERVICES",
     heading: "What I",
     accent: "offer.",
     sub: "Custom services to enhance your nails.",
+  },
+  vision: {
+    label: "MY VISION",
+    heading: "Reinventing",
+    accent: "beauty.",
+  },
+  mission: {
+    label: "MY MISSION",
+    heading: "Giving meaning to",
+    accent: "my art.",
   },
   contact: {
     label: "CONTACT",
@@ -55,7 +72,6 @@ export const en: Translations = {
     sent_sub: "I'll reply quickly.",
   },
   footer: {
-    quote: "Thanks for stopping by. Come back often — I always have new creations to show you.",
     rights: "All rights reserved.",
     made: "Made with love",
   },

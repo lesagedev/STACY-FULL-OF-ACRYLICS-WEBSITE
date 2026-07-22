@@ -1,21 +1,30 @@
 export interface Translations {
   nav: {
-    about: string; gallery: string; services: string; contact: string;
+    about: string; shootings: string; creations: string; services: string; contact: string;
   };
   hero: {
     badge: string; tagline: string; cta_gallery: string; cta_contact: string;
-    scroll: string;
+    scroll: string; roles: string[];
   };
   about: {
     label: string; heading: string; name: string;
     parcours: string; vision: string; mission: string;
   };
-  gallery: {
-    label: string; heading: string; accent: string;
-    sub: string; all: string; photos: string;
+  shootings: {
+    label: string; heading: string; accent: string; sub: string;
+  };
+  creations: {
+    label: string; heading: string; accent: string; sub: string;
+    all: string;
   };
   services: {
     label: string; heading: string; accent: string; sub: string;
+  };
+  vision: {
+    label: string; heading: string; accent: string;
+  };
+  mission: {
+    label: string; heading: string; accent: string;
   };
   contact: {
     label: string; heading: string; accent: string; sub: string;
@@ -25,14 +34,15 @@ export interface Translations {
     send: string; sending: string; sent_title: string; sent_sub: string;
   };
   footer: {
-    quote: string; rights: string; made: string;
+    rights: string; made: string;
   };
 }
 
 export const fr: Translations = {
   nav: {
     about: "À Propos",
-    gallery: "Galerie",
+    shootings: "Shootings",
+    creations: "Créations",
     services: "Services",
     contact: "Contact",
   },
@@ -42,6 +52,7 @@ export const fr: Translations = {
     cta_gallery: "Voir mes Créations",
     cta_contact: "Prendre Rendez-vous",
     scroll: "Découvrir",
+    roles: ["Prothésiste Ongulaire", "Nail Artist", "Créatrice de Tendances", "Artiste de la Main"],
   },
   about: {
     label: "À PROPOS",
@@ -51,13 +62,18 @@ export const fr: Translations = {
     vision: "Vision",
     mission: "Mission",
   },
-  gallery: {
-    label: "GALERIE",
+  shootings: {
+    label: "SHOOTINGS",
+    heading: "Mes",
+    accent: "portraits.",
+    sub: "Chaque séance photo capture l'essence de mon art.",
+  },
+  creations: {
+    label: "CRÉATIONS",
     heading: "Mes",
     accent: "créations.",
-    sub: "Chaque set est une œuvre d'art unique.",
+    sub: "Chaque set est une œuvre d'art unique, réalisée avec passion.",
     all: "Tous",
-    photos: "photos",
   },
   services: {
     label: "SERVICES",
@@ -65,11 +81,21 @@ export const fr: Translations = {
     accent: "propose.",
     sub: "Des prestations sur-mesure pour sublimer vos ongles.",
   },
+  vision: {
+    label: "MA VISION",
+    heading: "Réinventer la",
+    accent: "beauté.",
+  },
+  mission: {
+    label: "MA MISSION",
+    heading: "Donner du sens à",
+    accent: "mon art.",
+  },
   contact: {
     label: "CONTACT",
     heading: "Envie de belles mains ?",
     accent: "Contactez-moi.",
-    sub: "Rendez-vous, renseignements ou simply dire bonjour.",
+    sub: "Rendez-vous, renseignements ou simplement dire bonjour.",
     whatsapp: "WhatsApp",
     email_label: "Email",
     location_label: "Localisation",
@@ -84,7 +110,6 @@ export const fr: Translations = {
     sent_sub: "Je vous réponds rapidement.",
   },
   footer: {
-    quote: "Merci d'être passé. Revenez souvent — j'ai toujours de nouvelles créations à vous montrer.",
     rights: "Tous droits réservés.",
     made: "Made with love",
   },

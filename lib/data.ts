@@ -1,8 +1,3 @@
-/* ================================================================
-   STACY FULL OF ACRYLICS — Central data file
-   Prothésiste Ongulaire · Résineuse · Nail Art
-=============================================================== */
-
 export const ABOUT = {
   fullName: "Chouaké Diana Stacy",
   shortBio:
@@ -35,7 +30,6 @@ export const ABOUT = {
   photo: "/gallery/stacy-portrait-04-roses.webp",
 } as const;
 
-/* ── EXPÉRIENCE ─────────────────────────────────────────────────── */
 export const EXPERIENCE = [
   {
     year: "Janvier 2023",
@@ -46,7 +40,6 @@ export const EXPERIENCE = [
   },
 ] as const;
 
-/* ── SERVICES ─────────────────────────────────────────────────── */
 export const SERVICES = [
   {
     title: "Pose Complète",
@@ -64,35 +57,65 @@ export const SERVICES = [
   },
 ] as const;
 
-/* ── GALLERY ───────────────────────────────────────────────────── */
 export interface GalleryPhoto {
   src: string;
   alt: string;
   description: string;
+  category: "Gel" | "Acryl" | "Nail Art";
 }
 
 export const GALLERY_PHOTOS: GalleryPhoto[] = [
-  { src: "/gallery/creation-ongulaire-01.webp", alt: "Création ongulaire animal print", description: "Construction résine nude taille L forme carré + tigé orange + zèbre + strass" },
-  { src: "/gallery/creation-ongulaire-02.webp", alt: "Nail art animal print angle différent", description: "Construction résine nude taille L forme carré + tigé orange + zèbre + strass" },
-  { src: "/gallery/creation-ongulaire-03.webp", alt: "Nail art violet à pois", description: "Vernis gel violet avec pois blancs et studs dorés" },
-  { src: "/gallery/creation-ongulaire-04.webp", alt: "Création florale tropicale", description: "Construction résine nude taille L forme carré + zèbre + fleurs 3D orange" },
-  { src: "/gallery/creation-ongulaire-05.webp", alt: "Nail art floral angle différent", description: "Construction résine nude taille L forme carré + zèbre + fleurs 3D orange" },
-  { src: "/gallery/creation-ongulaire-06.webp", alt: "French bleu nuage", description: "Construction résine nude taille M forme carré + French bleu nuage + charme doré" },
-  { src: "/gallery/creation-ongulaire-07.webp", alt: "Création artistique bourgogne", description: "Construction résine amande taille L + bourgogne + feuilles dorées + fleurs" },
-  { src: "/gallery/creation-ongulaire-08.webp", alt: "Nail art artistic detail", description: "Construction résine amande taille L + bourgogne + feuilles dorées + fleurs" },
-  { src: "/gallery/creation-ongulaire-09.webp", alt: "French élégante bourgogne", description: "Construction résine stiletto taille L + bourgogne + blanc + croco + studs" },
-  { src: "/gallery/creation-ongulaire-10.webp", alt: "French élégante deux mains", description: "Construction résine stiletto taille L + bourgogne + blanc + croco + studs" },
-  { src: "/gallery/creation-ongulaire-11.webp", alt: "Cat eye magnétique vert", description: "Construction résine amande taille M + nude + vert chat magnétique" },
-  { src: "/gallery/creation-ongulaire-12.webp", alt: "Cat eye magnétique detail", description: "Construction résine amande taille M + nude + vert chat magnétique" },
-  { src: "/gallery/creation-ongulaire-13.webp", alt: "Flammes vibrant", description: "Construction résine stiletto taille XL + flammes rose/orange/jaune sur nude" },
-  { src: "/gallery/creation-ongulaire-14.webp", alt: "Nail art rose avec nœud 3D", description: "Construction résine taille M forme carré + rose/blanc + nœud papillon 3D + cœur" },
-  { src: "/gallery/creation-ongulaire-15.webp", alt: "French lilas feuilles", description: "Construction résine taille L forme carré + French lilas + feuilles noires + paillettes" },
-  { src: "/gallery/creation-ongulaire-16-popart.webp", alt: "Nail art pop art coloré", description: "Construction résine taille XL forme carré + nail art pop art coloré (fleurs, visages)" },
-] as const;
+  { src: "/gallery/creation-ongulaire-01.webp", alt: "Création ongulaire animal print", description: "Construction résine nude taille L forme carré + tigé orange + zèbre + strass", category: "Nail Art" },
+  { src: "/gallery/creation-ongulaire-02.webp", alt: "Nail art animal print angle différent", description: "Construction résine nude taille L forme carré + tigé orange + zèbre + strass", category: "Nail Art" },
+  { src: "/gallery/creation-ongulaire-03.webp", alt: "Nail art violet à pois", description: "Vernis gel violet avec pois blancs et studs dorés", category: "Gel" },
+  { src: "/gallery/creation-ongulaire-04.webp", alt: "Création florale tropicale", description: "Construction résine nude taille L forme carré + zèbre + fleurs 3D orange", category: "Nail Art" },
+  { src: "/gallery/creation-ongulaire-05.webp", alt: "Nail art floral angle différent", description: "Construction résine nude taille L forme carré + zèbre + fleurs 3D orange", category: "Nail Art" },
+  { src: "/gallery/creation-ongulaire-06.webp", alt: "French bleu nuage", description: "Construction résine nude taille M forme carré + French bleu nuage + charme doré", category: "Acryl" },
+  { src: "/gallery/creation-ongulaire-07.webp", alt: "Création artistique bourgogne", description: "Construction résine amande taille L + bourgogne + feuilles dorées + fleurs", category: "Nail Art" },
+  { src: "/gallery/creation-ongulaire-08.webp", alt: "Nail art artistic detail", description: "Construction résine amande taille L + bourgogne + feuilles dorées + fleurs", category: "Nail Art" },
+  { src: "/gallery/creation-ongulaire-09.webp", alt: "French élégante bourgogne", description: "Construction résine stiletto taille L + bourgogne + blanc + croco + studs", category: "Acryl" },
+  { src: "/gallery/creation-ongulaire-10.webp", alt: "French élégante deux mains", description: "Construction résine stiletto taille L + bourgogne + blanc + croco + studs", category: "Acryl" },
+  { src: "/gallery/creation-ongulaire-11.webp", alt: "Cat eye magnétique vert", description: "Construction résine amande taille M + nude + vert chat magnétique", category: "Gel" },
+  { src: "/gallery/creation-ongulaire-12.webp", alt: "Cat eye magnétique detail", description: "Construction résine amande taille M + nude + vert chat magnétique", category: "Gel" },
+  { src: "/gallery/creation-ongulaire-13.webp", alt: "Flammes vibrant", description: "Construction résine stiletto taille XL + flammes rose/orange/jaune sur nude", category: "Nail Art" },
+  { src: "/gallery/creation-ongulaire-14.webp", alt: "Nail art rose avec nœud 3D", description: "Construction résine taille M forme carré + rose/blanc + nœud papillon 3D + cœur", category: "Nail Art" },
+  { src: "/gallery/creation-ongulaire-15.webp", alt: "French lilas feuilles", description: "Construction résine taille L forme carré + French lilas + feuilles noires + paillettes", category: "Acryl" },
+  { src: "/gallery/creation-ongulaire-16-popart.webp", alt: "Nail art pop art coloré", description: "Construction résine taille XL forme carré + nail art pop art coloré (fleurs, visages)", category: "Nail Art" },
+];
 
 export const GALLERY_CATEGORIES = ["Tous", "Gel", "Acryl", "Nail Art"] as const;
 
-/* ── CONTACT ───────────────────────────────────────────────────── */
+export const SHOOTING_PHOTOS = [
+  { src: "/gallery/stacy-portrait-01.webp", alt: "Portrait Stacy 1" },
+  { src: "/gallery/stacy-portrait-02.webp", alt: "Portrait Stacy 2" },
+  { src: "/gallery/stacy-portrait-03.webp", alt: "Portrait Stacy 3" },
+  { src: "/gallery/stacy-portrait-04-roses.webp", alt: "Portrait Stacy avec roses" },
+  { src: "/gallery/stacy-portrait-05-nailart.webp", alt: "Portrait Stacy nail art" },
+];
+
+export const SOCIAL_STATS = [
+  { platform: "Instagram", handle: "@stacyfullofacrylics", count: "15.2K", color: "from-purple-500 via-pink-500 to-orange-400" },
+  { platform: "TikTok", handle: "@stacyfullnails", count: "48.7K", color: "#1A1A1A" },
+  { platform: "Snapchat", handle: "@stacyfull", count: "8.3K", color: "#FFFC00" },
+];
+
+export const VISION = {
+  title: "Ma Vision",
+  text: "Créer et innover constamment dans l'industrie de la beauté et être à l'avant-garde de la mode, en créant toujours des tendances dans le 'Nail Art'.",
+  image: SHOOTING_PHOTOS[3].src,
+} as const;
+
+export const MISSION = {
+  title: "Ma Mission",
+  items: [
+    "Donner plus de légitimité à la profession de prothésiste ongulaire.",
+    "Me prouver que je peux être une femme inspirante.",
+    "Satisfaire aux attentes des clients.",
+    "Aider les femmes à avoir plus confiance en elles grâce à mon travail.",
+  ],
+  image: SHOOTING_PHOTOS[3].src,
+} as const;
+
 export const CONTACT = {
   phones: ["+(237): 620-974-480", "+(237):693-728-883"],
   email: "chouakedianastacy@gmail.com",
