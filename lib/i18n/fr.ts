@@ -93,7 +93,7 @@ export const fr: Translations = {
   },
   contact: {
     label: "CONTACT",
-    heading: "Envie de belles mains ?",
+    heading: "Envie de beaux ongles ?",
     accent: "Contactez-moi.",
     sub: "Rendez-vous, renseignements ou simplement dire bonjour.",
     whatsapp: "WhatsApp",

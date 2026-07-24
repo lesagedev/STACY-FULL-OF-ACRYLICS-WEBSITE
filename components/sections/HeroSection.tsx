@@ -62,9 +62,9 @@ export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       <div className="absolute inset-0 -z-10">
-        <Image src="/hero-bg.jpeg" alt="" width={1920} height={1080} className="absolute inset-0 h-full w-full object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)]/85 from-40% via-[var(--bg-primary)]/60 via-65% to-transparent md:hidden" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-primary)]/80 from-30% via-[var(--bg-primary)]/50 via-60% to-transparent hidden md:block" />
+        <Image src="/hero-bg.webp" alt="" width={1920} height={1080} className="absolute inset-0 h-full w-full object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)]/95 from-45% via-[var(--bg-primary)]/85 via-65% to-transparent md:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-primary)]/95 from-25% via-[var(--bg-primary)]/85 via-55% to-transparent hidden md:block" />
         <div className="absolute inset-0 mesh-bg opacity-60" />
         <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(var(--accent-rgb),0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--accent-rgb),0.02) 1px,transparent 1px)", backgroundSize: "60px 60px" }} />
       </div>

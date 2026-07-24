@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Send, Phone, Mail, MapPin, CheckCircle } from "lucide-react";
+import { Send, Phone, Mail, MapPin, CheckCircle, MessageCircle } from "lucide-react";
 import { CONTACT } from "@/lib/data";
 import { useI18n } from "@/lib/i18n/context";
 import { SectionLabel } from "@/components/ui/SectionLabel";
@@ -44,28 +44,27 @@ export function ContactSection() {
 
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6 } } }} className="space-y-3">
-              {CONTACT.phones.map((phone, i) => (
-                <a key={i} href={`tel:${phone.replace(/\s/g, "")}`} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-4 rounded-xl glass-card p-4 card-hover border border-[var(--border-card)] hover:border-[#25D366] transition-colors">
-                  <div className="rounded-xl bg-[#25D366]/10 p-3"><Phone className="h-5 w-5 text-[#25D366]" /></div>
-                  <div>
-                    <span className="font-hero text-lg text-[var(--text-primary)]">{phone}</span>
-                    <p className="text-xs text-[var(--text-muted)]">Appeler maintenant</p>
-                  </div>
-                </a>
-              ))}
-              <div className="flex items-center gap-4 rounded-xl glass-card p-4 border border-[var(--border-card)]">
+              <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-4 rounded-xl glass-card p-4 card-hover border border-[var(--border-card)] hover:border-[#25D366] transition-colors">
+                <div className="rounded-xl bg-[#25D366]/10 p-3"><MessageCircle className="h-5 w-5 text-[#25D366]" /></div>
+                <div>
+                  <span className="font-hero text-lg text-[var(--text-primary)]">+237 {CONTACT.phone}</span>
+                  <p className="text-xs text-[var(--text-muted)]">WhatsApp uniquement (pas d&apos;appels)</p>
+                </div>
+              </a>
+              <a href={`mailto:${CONTACT.email}`} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-4 rounded-xl glass-card p-4 border border-[var(--border-card)] hover:border-[var(--accent)] transition-colors card-hover">
                 <div className="rounded-xl bg-[var(--accent)]/10 p-3"><Mail className="h-5 w-5 text-[var(--accent)]" /></div>
                 <div>
                   <span className="font-hero text-lg text-[var(--text-primary)]">{t.contact.email_label}</span>
                   <p className="text-xs text-[var(--text-muted)]">{CONTACT.email}</p>
                 </div>
-              </div>
+              </a>
               <div className="flex items-center gap-4 rounded-xl glass-card p-4 border border-[var(--border-card)]">
                 <div className="rounded-xl bg-[var(--text-primary)]/10 p-3"><MapPin className="h-5 w-5 text-[var(--text-primary)]" /></div>
                 <div>
                   <span className="font-hero text-lg text-[var(--text-primary)]">{t.contact.location_label}</span>
-                  <p className="text-xs text-[var(--text-muted)]">{CONTACT.location}</p>
+                  <p className="text-xs text-[var(--text-muted)] whitespace-pre-line">{CONTACT.location}</p>
                 </div>
               </div>
 

@@ -90,13 +90,13 @@ export function CreationsSection() {
                 setLb(idx);
               }}
             >
-              <div className="relative w-full">
+              <div className="relative w-full aspect-[3/4]">
                 <Image
                   src={photo.src}
                   alt={photo.alt}
-                  width={400}
-                  height={500}
-                  className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">

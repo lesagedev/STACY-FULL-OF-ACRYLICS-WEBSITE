@@ -1,53 +1,34 @@
 "use client";
-import { useMemo } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
-import "swiper/css";
 import { GALLERY_PHOTOS } from "@/lib/data";
 
-function CarouselRow({ photos, reverse }: { photos: typeof GALLERY_PHOTOS; reverse?: boolean }) {
-  const transforms = useMemo(
-    () => photos.map(() => ({ rotate: Math.random() * 8 - 4 })),
-    []
+function CarouselRow({ photos }: { photos: typeof GALLERY_PHOTOS }) {
+  const [emblaRef] = useEmblaCarousel(
+    { loop: true, align: "start", dragFree: true },
+    [Autoplay({ delay: 2200, stopOnInteraction: false, stopOnMouseEnter: true })]
   );
 
   return (
-    <div className={reverse ? "scale-x-[-1]" : ""}>
-      <Swiper
-        modules={[Autoplay]}
-        spaceBetween={20}
-        slidesPerView="auto"
-        loop
-        speed={700}
-        autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-        className="!py-4"
-        breakpoints={{ 768: { spaceBetween: 24 } }}
-      >
-        {[...photos, ...photos, ...photos].map((photo, i) => {
-          const r = transforms[i % photos.length].rotate;
-          return (
-            <SwiperSlide key={`${photo.src}-${i}`} className="!w-[260px] md:!w-[280px]">
-              <div
-                className="relative overflow-hidden rounded-xl border border-[var(--border-card)] card-hover"
-                style={{
-                  width: 260,
-                  height: 180,
-                  transform: reverse ? `rotate(${r}deg) scaleX(-1)` : `rotate(${r}deg)`,
-                }}
-              >
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  fill
-                  sizes="280px"
-                  className="object-cover transition-transform duration-500 hover:scale-110"
-                />
-              </div>
-            </SwiperSlide>
-          );
-        })}
-      </Swiper>
+    <div className="overflow-hidden" ref={emblaRef}>
+      <div className="flex gap-4 md:gap-5">
+        {photos.map((photo, i) => (
+          <div
+            key={`${photo.src}-${i}`}
+            className="relative shrink-0 w-[220px] h-[150px] md:w-[270px] md:h-[180px] overflow-hidden rounded-xl border border-[var(--border-card)] group"
+          >
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              fill
+              sizes="270px"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -55,7 +36,6 @@ function CarouselRow({ photos, reverse }: { photos: typeof GALLERY_PHOTOS; rever
 export function InfiniteCarousel() {
   const mid = Math.ceil(GALLERY_PHOTOS.length / 2);
   const row1 = GALLERY_PHOTOS.slice(0, mid);
-  const row2 = GALLERY_PHOTOS.slice(mid);
 
   return (
     <section className="py-20 md:py-28 overflow-hidden bg-[var(--bg-secondary)]">
@@ -68,10 +48,7 @@ export function InfiniteCarousel() {
         </h2>
       </div>
 
-      <div className="space-y-8 md:space-y-12 select-none">
-        <CarouselRow photos={row1} />
-        <CarouselRow photos={row2} reverse />
-      </div>
+      <CarouselRow photos={row1} />
     </section>
   );
 }

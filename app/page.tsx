@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronUp, Menu, X, Sun, Moon } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import { useI18n } from "@/lib/i18n/context";
 import { CONTACT } from "@/lib/data";
 import { InstagramIcon, TikTokIcon, SnapchatIcon } from "@/components/ui/SocialIcons";
 
+
 const AboutSection       = dynamic(() => import("@/components/sections/AboutSection").then(m => m.AboutSection), { ssr: false });
 const CreationsSection    = dynamic(() => import("@/components/sections/CreationsSection").then(m => m.CreationsSection), { ssr: false });
 const ServicesSection     = dynamic(() => import("@/components/sections/ServicesSection").then(m => m.ServicesSection), { ssr: false });
+const ProjectsSection     = dynamic(() => import("@/components/sections/ProjectsSection").then(m => m.ProjectsSection), { ssr: false });
 const VisionMissionSection = dynamic(() => import("@/components/sections/VisionMissionSection").then(m => m.VisionMissionSection), { ssr: false });
 const ContactSection      = dynamic(() => import("@/components/sections/ContactSection").then(m => m.ContactSection), { ssr: false });
 const InfiniteCarousel    = dynamic(() => import("@/components/sections/InfiniteCarousel").then(m => m.InfiniteCarousel), { ssr: false });
@@ -29,14 +32,17 @@ function TopBar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [active, setActive] = useState("about");
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
+    if (saved === "light") {
+      setDark(false);
+      document.documentElement.removeAttribute("data-theme");
+    } else {
       setDark(true);
       document.documentElement.setAttribute("data-theme", "dark");
     }
@@ -81,14 +87,13 @@ function TopBar() {
 
   return (
     <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-      scrolled ? "glass-card border-b border-[var(--border-card)]" : "bg-transparent"
+      scrolled ? "bg-[var(--bg-primary)]/50 backdrop-blur-md border-b border-[var(--border-card)]" : "bg-transparent"
     }`}>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
         <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           className="flex items-center gap-2 font-hero text-xl text-[var(--accent)] tracking-tight">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] text-xs font-bold text-white">S</span>
-          <span className="hidden sm:inline">STACYFULLOFACRYLICS</span>
-          <span className="sm:hidden">STACY</span>
+          <span>STACYFULLOFACRYLICS</span>
         </button>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -173,6 +178,7 @@ export default function App() {
       <VisionMissionSection />
       <CreationsSection />
       <ServicesSection />
+      <ProjectsSection />
       <ContactSection />
       <InfiniteCarousel />
 
@@ -207,6 +213,12 @@ export default function App() {
           <span>{t.footer.made}</span>
         </div>
       </footer>
+
+      <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer"
+        className="fixed bottom-6 left-6 z-50 h-14 w-14 rounded-full bg-[#25D366] text-white flex items-center justify-center hover:bg-[#1DA851] transition-colors shadow-lg hover:scale-110 hover:shadow-xl"
+        aria-label="WhatsApp">
+        <FaWhatsapp className="h-7 w-7" />
+      </a>
 
       <AnimatePresence>
         {showTop && (

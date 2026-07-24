@@ -97,23 +97,43 @@ export function AboutSection() {
               <motion.h2 variants={fadeUp} className="font-display text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
                 {t.about.heading} <span className="gradient-text">{ABOUT.fullName}</span>
               </motion.h2>
-              <motion.p variants={fadeUp} className="text-[var(--text-secondary)] leading-relaxed">{ABOUT.shortBio}</motion.p>
+              <motion.div variants={fadeUp} className="text-[var(--text-secondary)] leading-relaxed md:text-left text-justify space-y-3">
+                <p className="font-hero text-xl text-[var(--accent)]">{ABOUT.bioIntro}</p>
+                <p>
+                  {ABOUT.bioFull.map((seg, i) =>
+                    seg.bold ? <strong key={i}>{seg.text}</strong> : <span key={i}>{seg.text}</span>
+                  )}
+                </p>
+              </motion.div>
 
-              <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
-                {ABOUT.competences.map(comp => (
-                  <span key={comp} className="px-3 py-1 text-xs font-medium rounded-full glass-card text-[var(--accent)]">
-                    {comp}
-                  </span>
-                ))}
+              <motion.div variants={fadeUp} className="relative border-l-2 border-[var(--accent)]/30 pl-4 py-2">
+                <svg className="absolute -left-3 top-0 h-6 w-6 text-[var(--accent)]/40" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z" /></svg>
+                <p className="text-sm italic text-[var(--text-muted)] pl-4">
+                  &ldquo;On n&rsquo;est jamais complètement habillé sans une bonne manucure.&rdquo;
+                </p>
               </motion.div>
 
               <motion.div variants={fadeUp}>
-                <h3 className="font-accent text-xs font-semibold uppercase tracking-widest text-[var(--accent)] mb-4">{t.about.parcours}</h3>
+                <h3 className="font-accent text-xs font-semibold uppercase tracking-widest text-[var(--accent)] mb-3">Compétences Personnelles</h3>
+                <div className="flex flex-wrap gap-2">
+                  {ABOUT.competences.map(comp => (
+                    <span key={comp} className="px-3 py-1 text-xs font-medium rounded-full glass-card text-[var(--accent)]">
+                      {comp}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+
+              <motion.div variants={fadeUp}>
+                <h3 className="font-accent text-xs font-semibold uppercase tracking-widest text-[var(--accent)] mb-4">Éducation</h3>
                 <div className="space-y-3 border-l-2 border-[var(--accent)]/20 pl-4">
-                  {ABOUT.parcours.map(item => (
-                    <div key={item.year}>
-                      <span className="text-xs font-bold text-[var(--accent)]">{item.year}</span>
-                      <p className="text-sm text-[var(--text-secondary)]">{item.event}</p>
+                  {ABOUT.parcours.map((item, i) => (
+                    <div key={i}>
+                      {item.year && <span className="text-xs font-bold text-[var(--accent)]">{item.year}</span>}
+                      <p className={`text-sm text-[var(--text-secondary)] ${!item.year ? "pl-4 text-[var(--text-muted)]" : ""}`}>
+                        {!item.year && <span className="mr-2 text-[var(--accent)]">↳</span>}
+                        {item.event}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -130,16 +150,6 @@ export function AboutSection() {
                 </div>
               </motion.div>
 
-              <motion.div variants={fadeUp}>
-                <h3 className="font-accent text-xs font-semibold uppercase tracking-widest text-[var(--accent)] mb-3">Centres d&apos;intérêt</h3>
-                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 scrollbar-none">
-                  {ABOUT.centresInteret.map(ci => (
-                    <span key={ci} className="shrink-0 px-3 py-1 text-xs font-medium rounded-full bg-[var(--bg-card)] border border-[var(--border-card)] text-[var(--text-primary)] whitespace-nowrap">
-                      {ci}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
             </div>
           </div>
         </motion.div>
