@@ -39,6 +39,7 @@ export const ABOUT = {
     "Soins Esthétiques Mixtes",
     "Coiffure Femme",
     "Épilation à la cire",
+    "Fabrication de Press On Nails",
   ],
   langues: ["Français", "Anglais"],
   photo: "/gallery/stacy-portrait-04-roses.webp",
@@ -114,6 +115,27 @@ export const PROJECTS: Project[] = [
       { src: "/gallery/projet3-02.jpeg", alt: "Création 2", label: "Vue 2" },
     ],
   },
+  {
+    name: "Projet 4 — Pose artistique",
+    description: "Création artistique avec design sur mesure et finition impeccable.",
+    photos: [
+      { src: "/gallery/projet04-01.jpeg", alt: "Début de pose", label: "Début" },
+      { src: "/gallery/projet04-02.jpeg", alt: "Construction en cours", label: "Étape 1" },
+      { src: "/gallery/projet04-03.jpeg", alt: "Rendu final", label: "Final" },
+    ],
+  },
+  {
+    name: "Projet 5 — Set complet",
+    description: "Pose complète avec nail art détaillé et finition professionnelle.",
+    photos: [
+      { src: "/gallery/projet5-01.jpeg", alt: "Préparation", label: "Début" },
+      { src: "/gallery/projet5-02.jpeg", alt: "Construction", label: "Étape 1" },
+      { src: "/gallery/projet5-03.jpeg", alt: "Décoration", label: "Étape 2" },
+      { src: "/gallery/projet5-04.jpeg", alt: "Affinage", label: "Étape 3" },
+      { src: "/gallery/projet5-05.jpeg", alt: "Détails finaux", label: "Étape 4" },
+      { src: "/gallery/projet5-06.jpeg", alt: "Rendu final", label: "Final" },
+    ],
+  },
 ];
 
 export interface GalleryPhoto {
@@ -143,6 +165,8 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
   { src: "/gallery/vague03-2077.jpeg", alt: "Création ongulaire", description: "Pose ongulaire avec finition professionnelle", category: "Nail Art" },
   { src: "/gallery/vague03-3046.jpeg", alt: "Création ongulaire", description: "Construction et modelage d'ongles", category: "Gel" },
   { src: "/gallery/vague03-3047.jpeg", alt: "Création ongulaire détail", description: "Détail de pose ongulaire", category: "Gel" },
+  { src: "/gallery/projet04-03.jpeg", alt: "Projet 4 rendu final", description: "Création artistique avec design sur mesure", category: "Nail Art" },
+  { src: "/gallery/projet5-06.jpeg", alt: "Projet 5 rendu final", description: "Set complet avec nail art détaillé", category: "Nail Art" },
 ];
 
 export const GALLERY_CATEGORIES = ["Tous", "Gel", "Acryl", "Nail Art"] as const;
