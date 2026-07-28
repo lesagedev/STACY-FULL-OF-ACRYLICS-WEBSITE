@@ -38,9 +38,10 @@ export default function CategoriesPage() {
       body: JSON.stringify({ name: newName, slug: newSlug }),
     });
     if (res.ok) {
+      const created = await res.json();
+      setCategories((prev) => [...prev, { ...created, _count: { images: 0 } }]);
       setNewName("");
       setNewSlug("");
-      fetchCategories();
     }
   };
 
@@ -51,15 +52,18 @@ export default function CategoriesPage() {
       body: JSON.stringify({ name: editName, slug: editSlug }),
     });
     if (res.ok) {
+      const updated = await res.json();
+      setCategories((prev) =>
+        prev.map((c) => (c.id === updated.id ? { ...c, name: updated.name, slug: updated.slug } : c))
+      );
       setEditingId(null);
-      fetchCategories();
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Supprimer la catégorie "${name}" ?`)) return;
     await fetch(`/api/categories/${id}`, { method: "DELETE" });
-    fetchCategories();
+    setCategories((prev) => prev.filter((c) => c.id !== id));
   };
 
   const autoSlug = (name: string) => {
