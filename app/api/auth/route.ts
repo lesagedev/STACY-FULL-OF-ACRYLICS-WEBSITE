@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const OTP_CODE = "987654";
+const OTP_CODE = process.env.OTP_CODE || "987654";
 
 export async function POST(request: NextRequest) {
   try {
