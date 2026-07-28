@@ -1,0 +1,49 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  try {
+    const categories = await prisma.category.findMany({
+      include: {
+        _count: { select: { images: true } },
+      },
+      orderBy: { name: "asc" },
+    });
+
+    return NextResponse.json(categories);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { name, slug } = body;
+
+    if (!name || !slug) {
+      return NextResponse.json(
+        { error: "Nom et slug requis" },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.category.findUnique({ where: { slug } });
+    if (existing) {
+      return NextResponse.json(
+        { error: "Ce slug existe déjà" },
+        { status: 409 }
+      );
+    }
+
+    const category = await prisma.category.create({
+      data: { name, slug },
+    });
+
+    return NextResponse.json(category, { status: 201 });
+  } catch (error) {
+    console.error("Error creating category:", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}

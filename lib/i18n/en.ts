@@ -9,7 +9,7 @@ export const en: Translations = {
     contact: "Contact",
   },
   hero: {
-    badge: "Nail Prosthetist · Gel · Acrylic · Nail Art",
+    badge: "Nail Prosthetist · Acrylic · Nail Art",
     tagline: "I transform every hand into a work of art. Unique creations, custom designs and trends to enhance your nails.",
     cta_gallery: "See my Creations",
     cta_contact: "Book Appointment",

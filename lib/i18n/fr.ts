@@ -47,7 +47,7 @@ export const fr: Translations = {
     contact: "Contact",
   },
   hero: {
-    badge: "Prothésiste Ongulaire · Gel · Acryl · Nail Art",
+    badge: "Prothésiste Ongulaire · Acryl · Nail Art",
     tagline: "Je transforme chaque main en une œuvre d'art. Créations uniques, designs sur-mesure et tendances pour sublimer vos ongles.",
     cta_gallery: "Voir mes Créations",
     cta_contact: "Prendre Rendez-vous",
