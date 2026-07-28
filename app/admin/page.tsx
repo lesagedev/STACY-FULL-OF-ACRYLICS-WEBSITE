@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [secret, setSecret] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSecret(params.get("s") || "");
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +35,8 @@ export default function AdminLoginPage() {
       }
 
       localStorage.setItem("admin_token", data.token);
-      router.push("/admin/dashboard");
+      localStorage.setItem("admin_secret", secret);
+      router.push(`/admin/dashboard?s=${secret}`);
     } catch {
       setError("Erreur de connexion");
     } finally {

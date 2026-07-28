@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  env: {
+    ADMIN_SECRET: process.env.ADMIN_SECRET || "stacy-admin-x7k9m2p4",
+  },
 };
 
 export default nextConfig;
