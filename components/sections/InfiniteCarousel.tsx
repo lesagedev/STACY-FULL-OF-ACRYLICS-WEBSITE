@@ -43,7 +43,7 @@ export function InfiniteCarousel() {
   const [photos, setPhotos] = useState<GalleryImage[]>([]);
 
   useEffect(() => {
-    fetch("/api/gallery")
+    fetch("/api/gallery", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => setPhotos(data.images || []))
       .catch(() => {});

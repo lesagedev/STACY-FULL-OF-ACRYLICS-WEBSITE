@@ -26,7 +26,7 @@ export function ProjectsSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/projects")
+    fetch("/api/projects", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         setProjects(data);
