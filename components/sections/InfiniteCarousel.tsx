@@ -2,9 +2,15 @@
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
-import { GALLERY_PHOTOS } from "@/lib/data";
+import { useEffect, useState } from "react";
 
-function CarouselRow({ photos }: { photos: typeof GALLERY_PHOTOS }) {
+interface GalleryImage {
+  id: string;
+  src: string;
+  alt: string;
+}
+
+function CarouselRow({ photos }: { photos: GalleryImage[] }) {
   const [emblaRef] = useEmblaCarousel(
     { loop: true, align: "start", dragFree: true },
     [Autoplay({ delay: 2200, stopOnInteraction: false, stopOnMouseEnter: true })]
@@ -15,7 +21,7 @@ function CarouselRow({ photos }: { photos: typeof GALLERY_PHOTOS }) {
       <div className="flex gap-4 md:gap-5">
         {photos.map((photo, i) => (
           <div
-            key={`${photo.src}-${i}`}
+            key={`${photo.id}-${i}`}
             className="relative shrink-0 w-[220px] h-[150px] md:w-[270px] md:h-[180px] overflow-hidden rounded-xl border border-[var(--border-card)] group"
           >
             <Image
@@ -34,8 +40,19 @@ function CarouselRow({ photos }: { photos: typeof GALLERY_PHOTOS }) {
 }
 
 export function InfiniteCarousel() {
-  const mid = Math.ceil(GALLERY_PHOTOS.length / 2);
-  const row1 = GALLERY_PHOTOS.slice(0, mid);
+  const [photos, setPhotos] = useState<GalleryImage[]>([]);
+
+  useEffect(() => {
+    fetch("/api/gallery")
+      .then((r) => r.json())
+      .then((data) => setPhotos(data.images || []))
+      .catch(() => {});
+  }, []);
+
+  if (photos.length === 0) return null;
+
+  const mid = Math.ceil(photos.length / 2);
+  const row1 = photos.slice(0, mid);
 
   return (
     <section className="py-20 md:py-28 overflow-hidden bg-[var(--bg-secondary)]">

@@ -1,14 +1,55 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { PROJECTS } from "@/lib/data";
+
+interface ProjectImage {
+  id: string;
+  order: number;
+  label: string;
+  image: { id: string; src: string; alt: string };
+}
+
+interface DbProject {
+  id: string;
+  name: string;
+  description: string;
+  images: ProjectImage[];
+}
 
 export function ProjectsSection() {
   const [lbProject, setLbProject] = useState<number | null>(null);
   const [lbPhoto, setLbPhoto] = useState(0);
+  const [projects, setProjects] = useState<DbProject[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/projects")
+      .then((r) => r.json())
+      .then((data) => {
+        setProjects(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="projects" className="py-16 md:py-24 bg-[var(--bg-secondary)] overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="space-y-6">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="h-48 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (projects.length === 0) return null;
 
   return (
     <section id="projects" className="py-16 md:py-24 bg-[var(--bg-secondary)] overflow-hidden">
@@ -42,9 +83,9 @@ export function ProjectsSection() {
           </motion.p>
 
           <div className="mt-10 space-y-12">
-            {PROJECTS.map((project, pIdx) => (
+            {projects.map((project, pIdx) => (
               <motion.div
-                key={project.name}
+                key={project.id}
                 variants={{
                   hidden: { opacity: 0, y: 28 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const } },
@@ -55,16 +96,16 @@ export function ProjectsSection() {
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">{project.description}</p>
 
                 <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                  {project.photos.map((photo, i) => (
+                  {project.images.map((pi, i) => (
                     <div
-                      key={photo.src}
+                      key={pi.id}
                       className="group relative cursor-pointer"
                       onClick={() => { setLbProject(pIdx); setLbPhoto(i); }}
                     >
                       <div className="relative overflow-hidden rounded-xl border border-[var(--border-card)] aspect-[3/4]">
                         <Image
-                          src={photo.src}
-                          alt={photo.alt}
+                          src={pi.image.src}
+                          alt={pi.image.alt}
                           fill
                           sizes="(max-width: 768px) 50vw, 16vw"
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -79,8 +120,8 @@ export function ProjectsSection() {
                         </div>
                       </div>
                       <div className="mt-1.5 flex items-center gap-1.5">
-                        <span className={`h-2 w-2 rounded-full ${i === 0 ? "bg-red-400" : i === project.photos.length - 1 ? "bg-green-400" : "bg-[var(--accent)]/50"}`} />
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">{photo.label}</span>
+                        <span className={`h-2 w-2 rounded-full ${i === 0 ? "bg-red-400" : i === project.images.length - 1 ? "bg-green-400" : "bg-[var(--accent)]/50"}`} />
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">{pi.label}</span>
                       </div>
                     </div>
                   ))}
@@ -96,7 +137,7 @@ export function ProjectsSection() {
           open
           close={() => setLbProject(null)}
           index={lbPhoto}
-          slides={PROJECTS[lbProject].photos.map(p => ({ src: p.src, alt: p.alt }))}
+          slides={projects[lbProject].images.map((pi) => ({ src: pi.image.src, alt: pi.image.alt }))}
         />
       )}
     </section>
