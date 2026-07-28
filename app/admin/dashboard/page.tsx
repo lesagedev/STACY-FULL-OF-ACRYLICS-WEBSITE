@@ -35,7 +35,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8 font-[family-name:var(--font-display)]">
+      <h1 className="text-2xl sm:text-3xl font-bold text-white mb-8 font-[family-name:var(--font-display)]">
         Tableau de bord
       </h1>
 

@@ -73,11 +73,11 @@ export default function CategoriesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8 font-[family-name:var(--font-display)]">
+      <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 font-[family-name:var(--font-display)]">
         Catégories
       </h1>
 
-      <form onSubmit={handleCreate} className="flex gap-3 mb-8">
+      <form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3 mb-8">
         <input
           type="text"
           placeholder="Nom"
@@ -86,19 +86,19 @@ export default function CategoriesPage() {
             setNewName(e.target.value);
             setNewSlug(autoSlug(e.target.value));
           }}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1"
+          className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1"
         />
         <input
           type="text"
           placeholder="Slug"
           value={newSlug}
           onChange={(e) => setNewSlug(e.target.value)}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] w-40"
+          className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] sm:w-40"
         />
         <button
           type="submit"
           disabled={!newName || !newSlug}
-          className="px-6 py-2 bg-[#C9A84C] text-black font-semibold rounded-xl text-sm hover:bg-[#D4AF37] disabled:opacity-50"
+          className="px-6 py-2.5 bg-[#C9A84C] text-black font-semibold rounded-xl text-sm hover:bg-[#D4AF37] disabled:opacity-50"
         >
           Créer
         </button>
@@ -115,57 +115,69 @@ export default function CategoriesPage() {
           {categories.map((cat) => (
             <div
               key={cat.id}
-              className="flex items-center gap-4 p-4 bg-[#111] rounded-xl border border-white/10"
+              className="p-4 bg-[#111] rounded-xl border border-white/10"
             >
               {editingId === cat.id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1"
-                  />
-                  <input
-                    type="text"
-                    value={editSlug}
-                    onChange={(e) => setEditSlug(e.target.value)}
-                    className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#C9A84C] w-32"
-                  />
-                  <button
-                    onClick={() => handleUpdate(cat.id)}
-                    className="px-3 py-1.5 bg-[#C9A84C] text-black rounded-lg text-sm"
-                  >
-                    Sauver
-                  </button>
-                  <button
-                    onClick={() => setEditingId(null)}
-                    className="px-3 py-1.5 bg-white/5 text-white/60 rounded-lg text-sm"
-                  >
-                    Annuler
-                  </button>
-                </>
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1"
+                      placeholder="Nom"
+                    />
+                    <input
+                      type="text"
+                      value={editSlug}
+                      onChange={(e) => setEditSlug(e.target.value)}
+                      className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#C9A84C] sm:w-32"
+                      placeholder="Slug"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleUpdate(cat.id)}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-[#C9A84C] text-black rounded-lg text-sm font-medium"
+                    >
+                      Sauver
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-white/5 text-white/60 rounded-lg text-sm"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <>
-                  <span className="text-white font-medium flex-1">{cat.name}</span>
-                  <span className="text-white/40 text-sm font-mono">{cat.slug}</span>
-                  <span className="text-white/30 text-sm">{cat._count.images} images</span>
-                  <button
-                    onClick={() => {
-                      setEditingId(cat.id);
-                      setEditName(cat.name);
-                      setEditSlug(cat.slug);
-                    }}
-                    className="px-3 py-1.5 bg-white/5 text-white/60 rounded-lg text-sm hover:bg-white/10"
-                  >
-                    Modifier
-                  </button>
-                  <button
-                    onClick={() => handleDelete(cat.id, cat.name)}
-                    className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg text-sm hover:bg-red-500/20"
-                  >
-                    Supprimer
-                  </button>
-                </>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-medium truncate">{cat.name}</span>
+                      <span className="text-white/40 text-xs font-mono">{cat.slug}</span>
+                    </div>
+                    <span className="text-white/30 text-xs">{cat._count.images} images</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingId(cat.id);
+                        setEditName(cat.name);
+                        setEditSlug(cat.slug);
+                      }}
+                      className="flex-1 sm:flex-none px-3 py-1.5 bg-white/5 text-white/60 rounded-lg text-xs sm:text-sm hover:bg-white/10"
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      onClick={() => handleDelete(cat.id, cat.name)}
+                      className="flex-1 sm:flex-none px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg text-xs sm:text-sm hover:bg-red-500/20"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           ))}

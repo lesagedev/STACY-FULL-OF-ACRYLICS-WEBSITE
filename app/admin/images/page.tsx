@@ -134,22 +134,22 @@ export default function ImagesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8 font-[family-name:var(--font-display)]">
+      <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 font-[family-name:var(--font-display)]">
         Images
       </h1>
 
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="text"
           placeholder="Rechercher..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1 min-w-[200px]"
+          className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1 min-w-0"
         />
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C]"
+          className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C]"
         >
           <option value="">Toutes les catégories</option>
           {categories.map((cat) => (
@@ -159,32 +159,36 @@ export default function ImagesPage() {
       </div>
 
       {selected.size > 0 && (
-        <div className="flex flex-wrap gap-3 mb-6 p-4 bg-[#C9A84C]/10 rounded-xl border border-[#C9A84C]/30">
-          <span className="text-[#C9A84C] text-sm font-medium self-center">
-            {selected.size} sélectionnée(s)
-          </span>
-          <button
-            onClick={handleBulkDelete}
-            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30"
-          >
-            Supprimer
-          </button>
-          {categories.map((cat) => (
-            <div key={cat.id} className="flex gap-1">
-              <button
-                onClick={() => handleBulkAddCategory(cat.id)}
-                className="px-3 py-2 bg-white/5 text-white/70 rounded-lg text-sm hover:bg-white/10"
-              >
-                + {cat.name}
-              </button>
-              <button
-                onClick={() => handleBulkRemoveCategory(cat.id)}
-                className="px-3 py-2 bg-white/5 text-white/40 rounded-lg text-sm hover:bg-white/10"
-              >
-                - {cat.name}
-              </button>
-            </div>
-          ))}
+        <div className="mb-6 p-3 sm:p-4 bg-[#C9A84C]/10 rounded-xl border border-[#C9A84C]/30">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-[#C9A84C] text-sm font-medium">
+              {selected.size} sélectionnée(s)
+            </span>
+            <button
+              onClick={handleBulkDelete}
+              className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm hover:bg-red-500/30"
+            >
+              Supprimer
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <div key={cat.id} className="flex gap-1">
+                <button
+                  onClick={() => handleBulkAddCategory(cat.id)}
+                  className="px-2.5 py-1.5 bg-white/5 text-white/70 rounded-lg text-xs hover:bg-white/10"
+                >
+                  + {cat.name}
+                </button>
+                <button
+                  onClick={() => handleBulkRemoveCategory(cat.id)}
+                  className="px-2.5 py-1.5 bg-white/5 text-white/40 rounded-lg text-xs hover:bg-white/10"
+                >
+                  − {cat.name}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -202,13 +206,13 @@ export default function ImagesPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="aspect-square bg-white/5 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
           {images.map((img) => (
             <div
               key={img.id}
@@ -220,32 +224,32 @@ export default function ImagesPage() {
                 type="checkbox"
                 checked={selected.has(img.id)}
                 onChange={() => toggleSelect(img.id)}
-                className="absolute top-2 left-2 z-10 accent-[#C9A84C]"
+                className="absolute top-1.5 left-1.5 z-10 accent-[#C9A84C] w-4 h-4"
               />
               <img
                 src={img.src}
                 alt={img.alt}
                 className="w-full aspect-square object-cover"
               />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
-                <p className="text-white text-xs truncate">{img.alt || "Sans titre"}</p>
-                <div className="flex gap-1 mt-1">
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-1.5 sm:p-2">
+                <p className="text-white text-[10px] sm:text-xs truncate">{img.alt || "Sans titre"}</p>
+                <div className="flex flex-wrap gap-0.5 sm:gap-1 mt-1">
                   {img.categories.map((c) => (
-                    <span key={c.category.id} className="text-[10px] px-1.5 py-0.5 bg-[#C9A84C]/20 text-[#C9A84C] rounded">
+                    <span key={c.category.id} className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 bg-[#C9A84C]/20 text-[#C9A84C] rounded">
                       {c.category.name}
                     </span>
                   ))}
                 </div>
-                <div className="flex gap-1 mt-2">
+                <div className="flex gap-1 mt-1.5 sm:mt-2">
                   <button
                     onClick={() => openEdit(img)}
-                    className="px-2 py-1 bg-white/10 text-white rounded text-[10px] hover:bg-white/20"
+                    className="px-2 py-1 bg-white/10 text-white rounded text-[10px] sm:text-xs hover:bg-white/20"
                   >
                     Modifier
                   </button>
                   <button
                     onClick={() => deleteImage(img.id)}
-                    className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] hover:bg-red-500/30"
+                    className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] sm:text-xs hover:bg-red-500/30"
                   >
                     Supprimer
                   </button>
@@ -257,12 +261,12 @@ export default function ImagesPage() {
       )}
 
       {pagination.pages > 1 && (
-        <div className="flex justify-center gap-2 mt-8">
+        <div className="flex justify-center gap-1.5 sm:gap-2 mt-6 sm:mt-8">
           {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((p) => (
             <button
               key={p}
               onClick={() => fetchImages(p)}
-              className={`px-3 py-1 rounded-lg text-sm ${
+              className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs sm:text-sm ${
                 p === pagination.page
                   ? "bg-[#C9A84C] text-black"
                   : "bg-white/5 text-white/60 hover:bg-white/10"
@@ -275,10 +279,10 @@ export default function ImagesPage() {
       )}
 
       {editingImage && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111] rounded-2xl border border-white/10 w-full max-w-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Modifier l&apos;image</h2>
-            <img src={editingImage.src} alt={editingImage.alt} className="w-full h-48 object-cover rounded-xl mb-4" />
+        <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50 sm:p-4">
+          <div className="bg-[#111] rounded-t-2xl sm:rounded-2xl border border-white/10 w-full sm:max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-auto">
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Modifier l&apos;image</h2>
+            <img src={editingImage.src} alt={editingImage.alt} className="w-full h-40 sm:h-48 object-cover rounded-xl mb-4" />
             <div className="space-y-4">
               <div>
                 <label className="text-white/60 text-sm block mb-1">Alt</label>
@@ -286,7 +290,7 @@ export default function ImagesPage() {
                   type="text"
                   value={editAlt}
                   onChange={(e) => setEditAlt(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C]"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C]"
                 />
               </div>
               <div>
@@ -295,7 +299,7 @@ export default function ImagesPage() {
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] resize-none"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] resize-none"
                 />
               </div>
               <div>
@@ -318,16 +322,16 @@ export default function ImagesPage() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setEditingImage(null)}
-                className="px-4 py-2 bg-white/5 text-white/60 rounded-xl text-sm hover:bg-white/10"
+                className="flex-1 sm:flex-none px-4 py-2.5 bg-white/5 text-white/60 rounded-xl text-sm hover:bg-white/10"
               >
                 Annuler
               </button>
               <button
                 onClick={saveEdit}
-                className="px-4 py-2 bg-[#C9A84C] text-black font-semibold rounded-xl text-sm hover:bg-[#D4AF37]"
+                className="flex-1 sm:flex-none px-4 py-2.5 bg-[#C9A84C] text-black font-semibold rounded-xl text-sm hover:bg-[#D4AF37]"
               >
                 Enregistrer
               </button>
