@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const search = searchParams.get("search") || "";
     const categoryId = searchParams.get("categoryId") || "";
+    const projectId = searchParams.get("projectId") || "";
 
     const skip = (page - 1) * limit;
 
@@ -27,12 +28,21 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    if (projectId) {
+      where.projectImages = {
+        some: { projectId },
+      };
+    }
+
     const [images, total] = await Promise.all([
       prisma.image.findMany({
         where,
         include: {
           categories: {
             include: { category: true },
+          },
+          projectImages: {
+            include: { project: true },
           },
         },
         orderBy: { createdAt: "desc" },

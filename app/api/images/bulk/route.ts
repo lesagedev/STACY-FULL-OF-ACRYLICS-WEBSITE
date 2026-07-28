@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, imageIds, categoryIds } = body;
+    const { action, imageIds, categoryIds, projectIds } = body;
 
     if (!imageIds?.length) {
       return NextResponse.json(
@@ -55,6 +55,44 @@ export async function POST(request: NextRequest) {
           where: {
             imageId: { in: imageIds },
             categoryId: { in: categoryIds },
+          },
+        });
+        return NextResponse.json({ success: true });
+      }
+
+      case "addProjects": {
+        if (!projectIds?.length) {
+          return NextResponse.json(
+            { error: "Aucun projet sélectionné" },
+            { status: 400 }
+          );
+        }
+        const projectData = imageIds.flatMap((imageId: string) =>
+          projectIds.map((projectId: string) => ({
+            imageId,
+            projectId,
+          }))
+        );
+        if (projectData.length > 0) {
+          await prisma.projectImage.createMany({ data: projectData });
+        }
+        return NextResponse.json({
+          success: true,
+          linked: imageIds.length * projectIds.length,
+        });
+      }
+
+      case "removeProjects": {
+        if (!projectIds?.length) {
+          return NextResponse.json(
+            { error: "Aucun projet sélectionné" },
+            { status: 400 }
+          );
+        }
+        await prisma.projectImage.deleteMany({
+          where: {
+            imageId: { in: imageIds },
+            projectId: { in: projectIds },
           },
         });
         return NextResponse.json({ success: true });

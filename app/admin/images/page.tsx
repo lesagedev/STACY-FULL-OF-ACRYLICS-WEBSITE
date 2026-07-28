@@ -8,8 +8,17 @@ interface Category {
   slug: string;
 }
 
+interface Project {
+  id: string;
+  name: string;
+}
+
 interface ImageCategory {
   category: Category;
+}
+
+interface ProjectImage {
+  project: Project;
 }
 
 interface Image {
@@ -18,6 +27,7 @@ interface Image {
   alt: string;
   description: string;
   categories: ImageCategory[];
+  projectImages: ProjectImage[];
 }
 
 interface Pagination {
@@ -31,36 +41,45 @@ export default function ImagesPage() {
   const [images, setImages] = useState<Image[]>([]);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 50, total: 0, pages: 0 });
   const [categories, setCategories] = useState<Category[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  const [filterProject, setFilterProject] = useState("");
   const [loading, setLoading] = useState(true);
   const [editingImage, setEditingImage] = useState<Image | null>(null);
   const [editAlt, setEditAlt] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editCategories, setEditCategories] = useState<string[]>([]);
+  const [editProjects, setEditProjects] = useState<string[]>([]);
 
   const fetchImages = useCallback(async (page = 1) => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), limit: "50" });
     if (search) params.set("search", search);
     if (filterCategory) params.set("categoryId", filterCategory);
+    if (filterProject) params.set("projectId", filterProject);
     const res = await fetch(`/api/images?${params}`);
     const data = await res.json();
     setImages(data.images);
     setPagination(data.pagination);
     setLoading(false);
-  }, [search, filterCategory]);
+  }, [search, filterCategory, filterProject]);
 
   useEffect(() => {
     fetch("/api/categories").then((r) => r.json()).then(setCategories);
+    fetch("/api/projects").then((r) => r.json()).then(setProjects);
   }, []);
 
   useEffect(() => {
     fetchImages(1);
   }, [fetchImages]);
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: string, e?: React.MouseEvent) => {
+    if (e) {
+      const target = e.target as HTMLElement;
+      if (target.tagName === "BUTTON" || target.closest("button") || target.tagName === "INPUT") return;
+    }
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -79,33 +98,89 @@ export default function ImagesPage() {
 
   const handleBulkDelete = async () => {
     if (!confirm(`Supprimer ${selected.size} image(s) ?`)) return;
+    const ids = [...selected];
     await fetch("/api/images/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", imageIds: [...selected] }),
+      body: JSON.stringify({ action: "delete", imageIds: ids }),
     });
-    setSelected(new Set());
-    fetchImages(pagination.page);
+    setImages((prev) => prev.filter((img) => !ids.includes(img.id)));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.delete(id));
+      return next;
+    });
+    setPagination((prev) => ({ ...prev, total: prev.total - ids.length }));
   };
 
   const handleBulkAddCategory = async (categoryId: string) => {
     if (selected.size === 0) return;
+    const ids = [...selected];
     await fetch("/api/images/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "addCategories", imageIds: [...selected], categoryIds: [categoryId] }),
+      body: JSON.stringify({ action: "addCategories", imageIds: ids, categoryIds: [categoryId] }),
     });
-    fetchImages(pagination.page);
+    setImages((prev) =>
+      prev.map((img) => {
+        if (!ids.includes(img.id)) return img;
+        if (img.categories.some((c) => c.category.id === categoryId)) return img;
+        const cat = categories.find((c) => c.id === categoryId);
+        if (!cat) return img;
+        return { ...img, categories: [...img.categories, { category: cat }] };
+      })
+    );
   };
 
   const handleBulkRemoveCategory = async (categoryId: string) => {
     if (selected.size === 0) return;
+    const ids = [...selected];
     await fetch("/api/images/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "removeCategories", imageIds: [...selected], categoryIds: [categoryId] }),
+      body: JSON.stringify({ action: "removeCategories", imageIds: ids, categoryIds: [categoryId] }),
     });
-    fetchImages(pagination.page);
+    setImages((prev) =>
+      prev.map((img) => {
+        if (!ids.includes(img.id)) return img;
+        return { ...img, categories: img.categories.filter((c) => c.category.id !== categoryId) };
+      })
+    );
+  };
+
+  const handleBulkAddProject = async (projectId: string) => {
+    if (selected.size === 0) return;
+    const ids = [...selected];
+    await fetch("/api/images/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "addProjects", imageIds: ids, projectIds: [projectId] }),
+    });
+    setImages((prev) =>
+      prev.map((img) => {
+        if (!ids.includes(img.id)) return img;
+        if (img.projectImages.some((p) => p.project.id === projectId)) return img;
+        const proj = projects.find((p) => p.id === projectId);
+        if (!proj) return img;
+        return { ...img, projectImages: [...img.projectImages, { project: proj }] };
+      })
+    );
+  };
+
+  const handleBulkRemoveProject = async (projectId: string) => {
+    if (selected.size === 0) return;
+    const ids = [...selected];
+    await fetch("/api/images/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "removeProjects", imageIds: ids, projectIds: [projectId] }),
+    });
+    setImages((prev) =>
+      prev.map((img) => {
+        if (!ids.includes(img.id)) return img;
+        return { ...img, projectImages: img.projectImages.filter((p) => p.project.id !== projectId) };
+      })
+    );
   };
 
   const openEdit = (img: Image) => {
@@ -113,23 +188,28 @@ export default function ImagesPage() {
     setEditAlt(img.alt);
     setEditDescription(img.description);
     setEditCategories(img.categories.map((c) => c.category.id));
+    setEditProjects(img.projectImages.map((p) => p.project.id));
   };
 
   const saveEdit = async () => {
     if (!editingImage) return;
-    await fetch(`/api/images/${editingImage.id}`, {
+    const res = await fetch(`/api/images/${editingImage.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ alt: editAlt, description: editDescription, categoryIds: editCategories }),
+      body: JSON.stringify({ alt: editAlt, description: editDescription, categoryIds: editCategories, projectIds: editProjects }),
     });
+    const updated = await res.json();
+    setImages((prev) =>
+      prev.map((img) => (img.id === updated.id ? updated : img))
+    );
     setEditingImage(null);
-    fetchImages(pagination.page);
   };
 
   const deleteImage = async (id: string) => {
     if (!confirm("Supprimer cette image ?")) return;
     await fetch(`/api/images/${id}`, { method: "DELETE" });
-    fetchImages(pagination.page);
+    setImages((prev) => prev.filter((img) => img.id !== id));
+    setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
   };
 
   return (
@@ -156,6 +236,16 @@ export default function ImagesPage() {
             <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
+        <select
+          value={filterProject}
+          onChange={(e) => setFilterProject(e.target.value)}
+          className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C]"
+        >
+          <option value="">Tous les projets</option>
+          {projects.map((proj) => (
+            <option key={proj.id} value={proj.id}>{proj.name}</option>
+          ))}
+        </select>
       </div>
 
       {selected.size > 0 && (
@@ -171,7 +261,7 @@ export default function ImagesPage() {
               Supprimer
             </button>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-2">
             {categories.map((cat) => (
               <div key={cat.id} className="flex gap-1">
                 <button
@@ -189,6 +279,26 @@ export default function ImagesPage() {
               </div>
             ))}
           </div>
+          {projects.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {projects.map((proj) => (
+                <div key={proj.id} className="flex gap-1">
+                  <button
+                    onClick={() => handleBulkAddProject(proj.id)}
+                    className="px-2.5 py-1.5 bg-[#C9A84C]/10 text-[#C9A84C]/80 rounded-lg text-xs hover:bg-[#C9A84C]/20"
+                  >
+                    + {proj.name}
+                  </button>
+                  <button
+                    onClick={() => handleBulkRemoveProject(proj.id)}
+                    className="px-2.5 py-1.5 bg-[#C9A84C]/10 text-[#C9A84C]/50 rounded-lg text-xs hover:bg-[#C9A84C]/20"
+                  >
+                    − {proj.name}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -216,40 +326,46 @@ export default function ImagesPage() {
           {images.map((img) => (
             <div
               key={img.id}
-              className={`relative group rounded-xl overflow-hidden border-2 transition-colors ${
+              onClick={(e) => toggleSelect(img.id, e)}
+              className={`relative group rounded-xl overflow-hidden border-2 cursor-pointer transition-colors ${
                 selected.has(img.id) ? "border-[#C9A84C]" : "border-transparent hover:border-white/20"
               }`}
             >
               <input
                 type="checkbox"
                 checked={selected.has(img.id)}
-                onChange={() => toggleSelect(img.id)}
-                className="absolute top-1.5 left-1.5 z-10 accent-[#C9A84C] w-4 h-4"
+                readOnly
+                className="absolute top-1.5 left-1.5 z-10 accent-[#C9A84C] w-4 h-4 pointer-events-none"
               />
               <img
                 src={img.src}
                 alt={img.alt}
                 className="w-full aspect-square object-cover"
               />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-1.5 sm:p-2">
-                <p className="text-white text-[10px] sm:text-xs truncate">{img.alt || "Sans titre"}</p>
-                <div className="flex flex-wrap gap-0.5 sm:gap-1 mt-1">
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2">
+                <p className="text-white text-[10px] sm:text-xs truncate mb-1">{img.alt || "Sans titre"}</p>
+                <div className="flex flex-wrap gap-0.5 mb-1.5">
                   {img.categories.map((c) => (
-                    <span key={c.category.id} className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 bg-[#C9A84C]/20 text-[#C9A84C] rounded">
+                    <span key={c.category.id} className="text-[9px] sm:text-[10px] px-1 py-0.5 bg-[#C9A84C]/20 text-[#C9A84C] rounded">
                       {c.category.name}
                     </span>
                   ))}
+                  {img.projectImages.map((p) => (
+                    <span key={p.project.id} className="text-[9px] sm:text-[10px] px-1 py-0.5 bg-blue-500/20 text-blue-400 rounded">
+                      {p.project.name}
+                    </span>
+                  ))}
                 </div>
-                <div className="flex gap-1 mt-1.5 sm:mt-2">
+                <div className="flex gap-1">
                   <button
                     onClick={() => openEdit(img)}
-                    className="px-2 py-1 bg-white/10 text-white rounded text-[10px] sm:text-xs hover:bg-white/20"
+                    className="flex-1 px-2 py-1 bg-white/10 text-white rounded text-[10px] sm:text-xs hover:bg-white/20"
                   >
                     Modifier
                   </button>
                   <button
                     onClick={() => deleteImage(img.id)}
-                    className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] sm:text-xs hover:bg-red-500/30"
+                    className="flex-1 px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] sm:text-xs hover:bg-red-500/30"
                   >
                     Supprimer
                   </button>
@@ -321,6 +437,27 @@ export default function ImagesPage() {
                   ))}
                 </div>
               </div>
+              {projects.length > 0 && (
+                <div>
+                  <label className="text-white/60 text-sm block mb-2">Projets</label>
+                  <div className="flex flex-wrap gap-2">
+                    {projects.map((proj) => (
+                      <label key={proj.id} className="flex items-center gap-2 text-white/70 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editProjects.includes(proj.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) setEditProjects([...editProjects, proj.id]);
+                            else setEditProjects(editProjects.filter((id) => id !== proj.id));
+                          }}
+                          className="accent-[#C9A84C]"
+                        />
+                        {proj.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex gap-3 mt-6">
               <button

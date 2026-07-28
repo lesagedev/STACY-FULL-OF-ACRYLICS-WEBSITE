@@ -33,20 +33,32 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { alt, description, categoryIds } = body;
+    const { alt, description, categoryIds, projectIds } = body;
 
     const image = await prisma.image.findUnique({ where: { id } });
     if (!image) {
       return NextResponse.json({ error: "Image non trouvée" }, { status: 404 });
     }
 
-    if (categoryIds) {
+    if (categoryIds !== undefined) {
       await prisma.imageCategory.deleteMany({ where: { imageId: id } });
       if (categoryIds.length > 0) {
         await prisma.imageCategory.createMany({
           data: categoryIds.map((categoryId: string) => ({
             imageId: id,
             categoryId,
+          })),
+        });
+      }
+    }
+
+    if (projectIds !== undefined) {
+      await prisma.projectImage.deleteMany({ where: { imageId: id } });
+      if (projectIds.length > 0) {
+        await prisma.projectImage.createMany({
+          data: projectIds.map((projectId: string) => ({
+            imageId: id,
+            projectId,
           })),
         });
       }
@@ -60,6 +72,7 @@ export async function PUT(
       },
       include: {
         categories: { include: { category: true } },
+        projectImages: { include: { project: true } },
       },
     });
 

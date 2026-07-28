@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { PROJECTS } from "@/lib/data";
 
 interface ProjectImage {
   id: string;
@@ -9,7 +10,7 @@ interface ProjectImage {
   image: { id: string; src: string; alt: string };
 }
 
-interface Project {
+interface DbProject {
   id: string;
   name: string;
   description: string;
@@ -23,22 +24,24 @@ interface Image {
 }
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [dbProjects, setDbProjects] = useState<DbProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<DbProject | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editImageIds, setEditImageIds] = useState<string[]>([]);
   const [imageSearch, setImageSearch] = useState("");
   const [searchResults, setSearchResults] = useState<Image[]>([]);
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [expandedExisting, setExpandedExisting] = useState<number | null>(null);
+  const searchTimer = useRef<NodeJS.Timeout | null>(null);
 
   const fetchProjects = async () => {
     const res = await fetch("/api/projects");
     const data = await res.json();
-    setProjects(data);
+    setDbProjects(data);
     setLoading(false);
   };
 
@@ -51,9 +54,14 @@ export default function ProjectsPage() {
       setSearchResults([]);
       return;
     }
-    const res = await fetch(`/api/images?search=${encodeURIComponent(query)}&limit=20`);
+    const res = await fetch(`/api/images?search=${encodeURIComponent(query)}&limit=30`);
     const data = await res.json();
     setSearchResults(data.images);
+  };
+
+  const debouncedSearch = (query: string) => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => searchImages(query), 250);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -65,13 +73,14 @@ export default function ProjectsPage() {
       body: JSON.stringify({ name: newName, description: newDescription }),
     });
     if (res.ok) {
+      const created = await res.json();
+      setDbProjects((prev) => [...prev, { ...created, images: [] }]);
       setNewName("");
       setNewDescription("");
-      fetchProjects();
     }
   };
 
-  const openEdit = (project: Project) => {
+  const openEdit = (project: DbProject) => {
     setEditingProject(project);
     setEditName(project.name);
     setEditDescription(project.description);
@@ -86,15 +95,16 @@ export default function ProjectsPage() {
       body: JSON.stringify({ name: editName, description: editDescription, imageIds: editImageIds }),
     });
     if (res.ok) {
+      const updated = await res.json();
+      setDbProjects((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
       setEditingProject(null);
-      fetchProjects();
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Supprimer le projet "${name}" ?`)) return;
     await fetch(`/api/projects/${id}`, { method: "DELETE" });
-    fetchProjects();
+    setDbProjects((prev) => prev.filter((p) => p.id !== id));
   };
 
   const addImageToProject = (imageId: string) => {
@@ -117,88 +127,143 @@ export default function ProjectsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8 font-[family-name:var(--font-display)]">
+      <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 font-[family-name:var(--font-display)]">
         Projets
       </h1>
 
-      <form onSubmit={handleCreate} className="flex gap-3 mb-8">
+      <form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3 mb-8">
         <input
           type="text"
           placeholder="Nom du projet"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1"
+          className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1"
         />
         <input
           type="text"
           placeholder="Description"
           value={newDescription}
           onChange={(e) => setNewDescription(e.target.value)}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1"
+          className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] flex-1"
         />
         <button
           type="submit"
           disabled={!newName}
-          className="px-6 py-2 bg-[#C9A84C] text-black font-semibold rounded-xl text-sm hover:bg-[#D4AF37] disabled:opacity-50"
+          className="px-6 py-2.5 bg-[#C9A84C] text-black font-semibold rounded-xl text-sm hover:bg-[#D4AF37] disabled:opacity-50 sm:w-auto"
         >
           Créer
         </button>
       </form>
 
-      {loading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {projects.map((project) => (
-            <div key={project.id} className="p-6 bg-[#111] rounded-2xl border border-white/10">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-white font-semibold text-lg">{project.name}</h3>
-                  {project.description && (
-                    <p className="text-white/40 text-sm mt-1">{project.description}</p>
-                  )}
+      <div className="mb-10">
+        <h2 className="text-lg sm:text-xl font-semibold text-white/80 mb-4 font-[family-name:var(--font-display)]">
+          Projets existants
+        </h2>
+        <div className="space-y-3">
+          {PROJECTS.map((project, idx) => (
+            <div key={idx} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden">
+              <button
+                onClick={() => setExpandedExisting(expandedExisting === idx ? null : idx)}
+                className="w-full flex items-center justify-between p-4 sm:p-5 text-left"
+              >
+                <div className="min-w-0">
+                  <h3 className="text-white font-semibold text-sm sm:text-base truncate">{project.name}</h3>
+                  <p className="text-white/40 text-xs sm:text-sm mt-0.5 truncate">{project.description}</p>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openEdit(project)}
-                    className="px-3 py-1.5 bg-white/5 text-white/60 rounded-lg text-sm hover:bg-white/10"
+                <div className="flex items-center gap-3 ml-3 flex-shrink-0">
+                  <span className="text-white/30 text-xs">{project.photos.length} photos</span>
+                  <svg
+                    className={`w-5 h-5 text-white/40 transition-transform ${expandedExisting === idx ? "rotate-180" : ""}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"
                   >
-                    Modifier
-                  </button>
-                  <button
-                    onClick={() => handleDelete(project.id, project.name)}
-                    className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg text-sm hover:bg-red-500/20"
-                  >
-                    Supprimer
-                  </button>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {project.images.map((pi) => (
-                  <img
-                    key={pi.id}
-                    src={pi.image.src}
-                    alt={pi.image.alt}
-                    className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                  />
-                ))}
-                {project.images.length === 0 && (
-                  <p className="text-white/30 text-sm">Aucune image</p>
-                )}
-              </div>
+              </button>
+              {expandedExisting === idx && (
+                <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {project.photos.map((photo, pIdx) => (
+                      <div key={pIdx} className="flex-shrink-0">
+                        <img
+                          src={photo.src}
+                          alt={photo.alt}
+                          className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg"
+                        />
+                        <p className="text-white/40 text-[10px] text-center mt-1 max-w-[5rem] sm:max-w-[6rem] truncate">
+                          {photo.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
-      )}
+      </div>
+
+      <div>
+        <h2 className="text-lg sm:text-xl font-semibold text-white/80 mb-4 font-[family-name:var(--font-display)]">
+          Projets créés
+        </h2>
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="h-20 sm:h-24 bg-white/5 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : dbProjects.length === 0 ? (
+          <p className="text-white/30 text-sm">Aucun projet créé pour le moment.</p>
+        ) : (
+          <div className="space-y-3">
+            {dbProjects.map((project) => (
+              <div key={project.id} className="p-4 sm:p-5 bg-[#111] rounded-2xl border border-white/10">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <h3 className="text-white font-semibold text-sm sm:text-base">{project.name}</h3>
+                    {project.description && (
+                      <p className="text-white/40 text-xs sm:text-sm mt-0.5">{project.description}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => openEdit(project)}
+                      className="px-3 py-1.5 bg-white/5 text-white/60 rounded-lg text-xs sm:text-sm hover:bg-white/10"
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      onClick={() => handleDelete(project.id, project.name)}
+                      className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg text-xs sm:text-sm hover:bg-red-500/20"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {project.images.map((pi) => (
+                    <img
+                      key={pi.id}
+                      src={pi.image.src}
+                      alt={pi.image.alt}
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
+                    />
+                  ))}
+                  {project.images.length === 0 && (
+                    <p className="text-white/30 text-sm">Aucune image</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {editingProject && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111] rounded-2xl border border-white/10 w-full max-w-3xl max-h-[90vh] overflow-auto p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Modifier le projet</h2>
+        <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50 sm:p-4">
+          <div className="bg-[#111] rounded-t-2xl sm:rounded-2xl border border-white/10 w-full sm:max-w-3xl max-h-[90vh] overflow-auto p-5 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Modifier le projet</h2>
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-white/60 text-sm block mb-1">Nom</label>
@@ -206,7 +271,7 @@ export default function ProjectsPage() {
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C]"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C]"
                 />
               </div>
               <div>
@@ -215,20 +280,20 @@ export default function ProjectsPage() {
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] resize-none"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] resize-none"
                 />
               </div>
               <div>
                 <label className="text-white/60 text-sm block mb-2">Images ({editImageIds.length})</label>
                 <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
                   {editImageIds.map((imageId, index) => {
-                    const img = searchResults.find((r) => r.id === imageId) || projects.flatMap((p) => p.images).find((pi) => pi.image.id === imageId)?.image;
+                    const img = searchResults.find((r) => r.id === imageId) || dbProjects.flatMap((p) => p.images).find((pi) => pi.image.id === imageId)?.image;
                     return (
                       <div key={imageId} className="relative flex-shrink-0">
                         <img
                           src={img?.src || ""}
                           alt=""
-                          className="w-20 h-20 object-cover rounded-lg"
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg"
                         />
                         <div className="absolute -top-1 -right-1 flex gap-0.5">
                           {index > 0 && (
@@ -272,11 +337,11 @@ export default function ProjectsPage() {
                       value={imageSearch}
                       onChange={(e) => {
                         setImageSearch(e.target.value);
-                        searchImages(e.target.value);
+                        debouncedSearch(e.target.value);
                       }}
-                      className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] mb-3"
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C9A84C] mb-3"
                     />
-                    <div className="grid grid-cols-6 gap-2 max-h-48 overflow-auto">
+                    <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-1.5 max-h-64 overflow-auto">
                       {searchResults.map((img) => (
                         <button
                           key={img.id}
@@ -296,16 +361,16 @@ export default function ProjectsPage() {
                 )}
               </div>
             </div>
-            <div className="flex justify-end gap-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => setEditingProject(null)}
-                className="px-4 py-2 bg-white/5 text-white/60 rounded-xl text-sm hover:bg-white/10"
+                className="flex-1 sm:flex-none px-4 py-2.5 bg-white/5 text-white/60 rounded-xl text-sm hover:bg-white/10"
               >
                 Annuler
               </button>
               <button
                 onClick={handleUpdate}
-                className="px-4 py-2 bg-[#C9A84C] text-black font-semibold rounded-xl text-sm hover:bg-[#D4AF37]"
+                className="flex-1 sm:flex-none px-4 py-2.5 bg-[#C9A84C] text-black font-semibold rounded-xl text-sm hover:bg-[#D4AF37]"
               >
                 Enregistrer
               </button>
