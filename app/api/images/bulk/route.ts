@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hasLimitImagesColumn } from "@/lib/limit-images";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,16 +31,25 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
+        const existing = await prisma.imageCategory.findMany({
+          where: { imageId: { in: imageIds }, categoryId: { in: categoryIds } },
+          select: { imageId: true, categoryId: true },
+        });
+        const existingSet = new Set(existing.map((e) => `${e.imageId}:${e.categoryId}`));
         const data = imageIds.flatMap((imageId: string) =>
-          categoryIds.map((categoryId: string) => ({
-            imageId,
-            categoryId,
-          }))
+          categoryIds
+            .filter((categoryId: string) => !existingSet.has(`${imageId}:${categoryId}`))
+            .map((categoryId: string) => ({
+              imageId,
+              categoryId,
+            }))
         );
-        await prisma.imageCategory.createMany({ data });
+        if (data.length > 0) {
+          await prisma.imageCategory.createMany({ data });
+        }
         return NextResponse.json({
           success: true,
-          linked: imageIds.length * categoryIds.length,
+          linked: data.length,
         });
       }
 
@@ -68,31 +76,25 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        if (await hasLimitImagesColumn()) {
-          const limitedProjects = await prisma.project.findMany({
-            where: { id: { in: projectIds }, limitImages: true },
-            include: { images: true },
-          });
-          const fullProject = limitedProjects.find((project) => {
-            const incoming = imageIds.filter((imageId: string) => !project.images.some((image) => image.imageId === imageId));
-            return project.images.length + incoming.length > 2;
-          });
-          if (fullProject) {
-            return NextResponse.json({ error: "Un projet ne peut contenir que 2 images maximum" }, { status: 400 });
-          }
-        }
+        const existing = await prisma.projectImage.findMany({
+          where: { imageId: { in: imageIds }, projectId: { in: projectIds } },
+          select: { imageId: true, projectId: true },
+        });
+        const existingSet = new Set(existing.map((e) => `${e.imageId}:${e.projectId}`));
         const projectData = imageIds.flatMap((imageId: string) =>
-          projectIds.map((projectId: string) => ({
-            imageId,
-            projectId,
-          }))
+          projectIds
+            .filter((projectId: string) => !existingSet.has(`${imageId}:${projectId}`))
+            .map((projectId: string) => ({
+              imageId,
+              projectId,
+            }))
         );
         if (projectData.length > 0) {
           await prisma.projectImage.createMany({ data: projectData });
         }
         return NextResponse.json({
           success: true,
-          linked: imageIds.length * projectIds.length,
+          linked: projectData.length,
         });
       }
 

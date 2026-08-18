@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getProjectSelect, hasLimitImagesColumn } from "@/lib/limit-images";
+import { getProjectSelect } from "@/lib/limit-images";
 
 export async function GET(
   request: NextRequest,
@@ -36,7 +36,6 @@ export async function PUT(
     const body = await request.json();
     const { name, description, imageIds } = body;
 
-    const limitImagesEnabled = await hasLimitImagesColumn();
     const project = await prisma.project.findUnique({
       where: { id },
       select: await getProjectSelect(true),
@@ -46,10 +45,6 @@ export async function PUT(
         { error: "Projet non trouvé" },
         { status: 404 }
       );
-    }
-
-    if (imageIds && limitImagesEnabled && (project as { limitImages?: boolean }).limitImages && imageIds.length > 2) {
-      return NextResponse.json({ error: "Ce nouveau projet ne peut contenir que 2 images maximum" }, { status: 400 });
     }
 
     if (imageIds) {

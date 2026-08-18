@@ -97,14 +97,25 @@ export default function ImagesPage() {
     }
   };
 
+  const postBulk = async (body: Record<string, unknown>): Promise<{ ok: boolean; error?: string }> => {
+    const res = await fetch("/api/images/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: data.error || "Erreur serveur" };
+    return { ok: true };
+  };
+
   const handleBulkDelete = async () => {
     if (!confirm(`Supprimer ${selected.size} image(s) ?`)) return;
     const ids = [...selected];
-    await fetch("/api/images/bulk", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", imageIds: ids }),
-    });
+    const result = await postBulk({ action: "delete", imageIds: ids });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
     setImages((prev) => prev.filter((img) => !ids.includes(img.id)));
     setSelected((prev) => {
       const next = new Set(prev);
@@ -117,11 +128,11 @@ export default function ImagesPage() {
   const handleBulkAddCategory = async (categoryId: string) => {
     if (selected.size === 0) return;
     const ids = [...selected];
-    await fetch("/api/images/bulk", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "addCategories", imageIds: ids, categoryIds: [categoryId] }),
-    });
+    const result = await postBulk({ action: "addCategories", imageIds: ids, categoryIds: [categoryId] });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
     setImages((prev) =>
       prev.map((img) => {
         if (!ids.includes(img.id)) return img;
@@ -136,11 +147,11 @@ export default function ImagesPage() {
   const handleBulkRemoveCategory = async (categoryId: string) => {
     if (selected.size === 0) return;
     const ids = [...selected];
-    await fetch("/api/images/bulk", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "removeCategories", imageIds: ids, categoryIds: [categoryId] }),
-    });
+    const result = await postBulk({ action: "removeCategories", imageIds: ids, categoryIds: [categoryId] });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
     setImages((prev) =>
       prev.map((img) => {
         if (!ids.includes(img.id)) return img;
@@ -152,11 +163,11 @@ export default function ImagesPage() {
   const handleBulkAddProject = async (projectId: string) => {
     if (selected.size === 0) return;
     const ids = [...selected];
-    await fetch("/api/images/bulk", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "addProjects", imageIds: ids, projectIds: [projectId] }),
-    });
+    const result = await postBulk({ action: "addProjects", imageIds: ids, projectIds: [projectId] });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
     setImages((prev) =>
       prev.map((img) => {
         if (!ids.includes(img.id)) return img;
@@ -171,11 +182,11 @@ export default function ImagesPage() {
   const handleBulkRemoveProject = async (projectId: string) => {
     if (selected.size === 0) return;
     const ids = [...selected];
-    await fetch("/api/images/bulk", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "removeProjects", imageIds: ids, projectIds: [projectId] }),
-    });
+    const result = await postBulk({ action: "removeProjects", imageIds: ids, projectIds: [projectId] });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
     setImages((prev) =>
       prev.map((img) => {
         if (!ids.includes(img.id)) return img;
@@ -200,6 +211,10 @@ export default function ImagesPage() {
       body: JSON.stringify({ alt: editAlt, description: editDescription, categoryIds: editCategories, projectIds: editProjects }),
     });
     const updated = await res.json();
+    if (!res.ok) {
+      alert(updated.error || "Erreur serveur");
+      return;
+    }
     setImages((prev) =>
       prev.map((img) => (img.id === updated.id ? updated : img))
     );
@@ -208,7 +223,12 @@ export default function ImagesPage() {
 
   const deleteImage = async (id: string) => {
     if (!confirm("Supprimer cette image ?")) return;
-    await fetch(`/api/images/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/images/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Erreur serveur");
+      return;
+    }
     setImages((prev) => prev.filter((img) => img.id !== id));
     setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
   };

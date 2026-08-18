@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getProjectSelect, hasLimitImagesColumn } from "@/lib/limit-images";
+import { getProjectSelect } from "@/lib/limit-images";
 
 export const dynamic = "force-dynamic";
 
@@ -27,15 +27,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nom requis" }, { status: 400 });
     }
 
-    if (imageIds?.length > 2) {
-      return NextResponse.json({ error: "Un nouveau projet ne peut contenir que 2 images maximum" }, { status: 400 });
-    }
-
     const project = await prisma.project.create({
       data: {
         name,
         description: description || "",
-        ...(await hasLimitImagesColumn() ? { limitImages: true } : {}),
         images: imageIds?.length
           ? {
               create: imageIds.map((imageId: string, index: number) => ({

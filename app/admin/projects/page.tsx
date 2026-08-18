@@ -107,7 +107,7 @@ export default function ProjectsPage() {
   };
 
   const addImageToProject = (imageId: string) => {
-    if (!editImageIds.includes(imageId) && (!editingProject?.limitImages || editImageIds.length < 2)) {
+    if (!editImageIds.includes(imageId)) {
       setEditImageIds([...editImageIds, imageId]);
     }
   };
@@ -230,7 +230,7 @@ export default function ProjectsPage() {
                 />
               </div>
               <div>
-                <label className="text-white/60 text-sm block mb-2">Images ({editImageIds.length}{editingProject.limitImages ? "/2" : ""})</label>
+                <label className="text-white/60 text-sm block mb-2">Images ({editImageIds.length})</label>
                 <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
                   {editImageIds.map((imageId, index) => {
                     const img = searchResults.find((r) => r.id === imageId) || dbProjects.flatMap((p) => p.images).find((pi) => pi.image.id === imageId)?.image;
@@ -292,7 +292,7 @@ export default function ProjectsPage() {
                         <button
                           key={img.id}
                           onClick={() => addImageToProject(img.id)}
-                           disabled={editImageIds.includes(img.id) || (editingProject.limitImages && editImageIds.length >= 2)}
+                          disabled={editImageIds.includes(img.id)}
                           className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
                             editImageIds.includes(img.id)
                               ? "border-[#C9A84C] opacity-50"
