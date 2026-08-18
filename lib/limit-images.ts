@@ -6,7 +6,7 @@ let cachedColumnCheck: boolean | null = null;
 export async function hasLimitImagesColumn(): Promise<boolean> {
   if (cachedColumnCheck !== null) return cachedColumnCheck;
   try {
-    const rows = await prisma.$queryRaw<{ name: string }[]>`SELECT name FROM pragma_table_info("Project")`;
+    const rows = await prisma.$queryRaw<{ name: string }[]>`SELECT name FROM pragma_table_info('Project')`;
     cachedColumnCheck = rows.some((row) => row.name === "limitImages");
   } catch {
     cachedColumnCheck = false;

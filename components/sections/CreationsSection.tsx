@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { useI18n } from "@/lib/i18n/context";
+import { fetchCachedJson } from "@/lib/gallery-cache";
 
 interface Category {
   id: string;
@@ -34,11 +35,15 @@ export function CreationsSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/gallery", { cache: "no-store" })
-      .then((r) => r.json())
+    fetchCachedJson("gallery", 5 * 60 * 1000, async () => {
+      const res = await fetch("/api/gallery", { cache: "no-store" });
+      if (!res.ok) throw new Error("Galerie indisponible");
+      return res.json();
+    })
       .then((data) => {
-        setCategories(data.categories || []);
-        setImages(data.images || []);
+        const gallery = data as { categories?: Category[]; images?: GalleryImage[] };
+        setCategories(gallery.categories || []);
+        setImages(gallery.images || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -138,6 +143,9 @@ export function CreationsSection() {
                     src={photo.src}
                     alt={photo.alt}
                     fill
+                    loading="lazy"
+                    decoding="async"
+                    fetchPriority="low"
                     sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />

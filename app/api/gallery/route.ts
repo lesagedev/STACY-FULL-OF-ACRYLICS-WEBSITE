@@ -19,7 +19,14 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ categories, images });
+    return NextResponse.json(
+      { categories, images },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching gallery:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

@@ -7,9 +7,23 @@ export const runtime = "nodejs";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+const CONCURRENCY = 4;
 
 function safeName(name: string) {
   return name.normalize("NFKD").replace(/[^a-zA-Z0-9.-]/g, "-").replace(/-+/g, "-").toLowerCase();
+}
+
+async function mapConcurrent<T, R>(items: T[], limit: number, fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor++;
+      results[index] = await fn(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }
 
 export async function POST(request: NextRequest) {
@@ -47,8 +61,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const images = [];
-    for (const file of files) {
+    const images = await mapConcurrent(files, CONCURRENCY, async (file) => {
       const blob = await put(`gallery/${crypto.randomUUID()}-${safeName(file.name)}`, file, {
         access: "public",
         addRandomSuffix: false,
@@ -68,8 +81,8 @@ export async function POST(request: NextRequest) {
         include: { categories: { include: { category: true } } },
       });
       createdIds.push(image.id);
-      images.push(image);
-    }
+      return image;
+    });
 
     return NextResponse.json({ images }, { status: 201 });
   } catch (error) {

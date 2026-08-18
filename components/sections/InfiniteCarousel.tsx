@@ -3,6 +3,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { fetchCachedJson } from "@/lib/gallery-cache";
 
 interface GalleryImage {
   id: string;
@@ -28,6 +29,9 @@ function CarouselRow({ photos }: { photos: GalleryImage[] }) {
               src={photo.src}
               alt={photo.alt}
               fill
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
               sizes="270px"
               className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
@@ -43,9 +47,15 @@ export function InfiniteCarousel() {
   const [photos, setPhotos] = useState<GalleryImage[]>([]);
 
   useEffect(() => {
-    fetch("/api/gallery", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => setPhotos(data.images || []))
+    fetchCachedJson("gallery", 5 * 60 * 1000, async () => {
+      const res = await fetch("/api/gallery", { cache: "no-store" });
+      if (!res.ok) throw new Error("Galerie indisponible");
+      return res.json();
+    })
+      .then((data) => {
+        const gallery = data as { images?: GalleryImage[] };
+        setPhotos(gallery.images || []);
+      })
       .catch(() => {});
   }, []);
 

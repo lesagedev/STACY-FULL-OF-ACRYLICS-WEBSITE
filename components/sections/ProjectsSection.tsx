@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
+import { fetchCachedJson } from "@/lib/gallery-cache";
 
 interface ProjectImage {
   id: string;
@@ -26,11 +27,14 @@ export function ProjectsSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/projects", { cache: "no-store" })
-      .then((r) => r.json())
+    fetchCachedJson("projects", 5 * 60 * 1000, async () => {
+      const res = await fetch("/api/projects", { cache: "no-store" });
+      if (!res.ok) throw new Error("Projets indisponibles");
+      return res.json();
+    })
       .then((data) => {
         if (Array.isArray(data)) {
-          setProjects(data);
+          setProjects(data as DbProject[]);
         }
         setLoading(false);
       })
@@ -109,6 +113,9 @@ export function ProjectsSection() {
                           src={pi.image.src}
                           alt={pi.image.alt}
                           fill
+                          loading="lazy"
+                          decoding="async"
+                          fetchPriority="low"
                           sizes="(max-width: 768px) 50vw, 16vw"
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
                         />
