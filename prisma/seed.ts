@@ -11,6 +11,8 @@ const CATEGORIES = [
   { name: "Gel", slug: "gel" },
   { name: "Acryl", slug: "acryl" },
   { name: "Nail Art", slug: "nail-art" },
+  { name: "Pédicure", slug: "pedicure" },
+  { name: "Archive", slug: "archive" },
 ];
 
 const GALLERY_PHOTOS = [

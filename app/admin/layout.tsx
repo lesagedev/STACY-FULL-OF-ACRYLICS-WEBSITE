@@ -57,7 +57,7 @@ export default function AdminLayout({
 
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
-    router.push(`/admin?s=${secret}`);
+    fetch("/api/auth", { method: "DELETE" }).finally(() => router.push(`/admin?s=${secret}`));
   };
 
   const adminUrl = (path: string) => `${path}?s=${secret}`;

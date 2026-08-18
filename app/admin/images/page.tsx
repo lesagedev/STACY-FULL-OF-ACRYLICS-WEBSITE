@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 interface Category {
   id: string;
@@ -67,8 +68,8 @@ export default function ImagesPage() {
   }, [search, filterCategory, filterProject]);
 
   useEffect(() => {
-    fetch("/api/categories").then((r) => r.json()).then(setCategories);
-    fetch("/api/projects").then((r) => r.json()).then(setProjects);
+    fetch("/api/categories").then((r) => r.json()).then((data) => setCategories(Array.isArray(data) ? data : []));
+    fetch("/api/projects").then((r) => r.json()).then((data) => setProjects(Array.isArray(data) ? data : []));
   }, []);
 
   useEffect(() => {
@@ -217,6 +218,11 @@ export default function ImagesPage() {
       <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 font-[family-name:var(--font-display)]">
         Images
       </h1>
+
+      <ImageUpload categories={categories} onUploaded={(uploaded) => {
+        setImages((current) => [...uploaded.map((image) => ({ ...image, description: "", categories: [], projectImages: [] })), ...current]);
+        setPagination((current) => ({ ...current, total: current.total + uploaded.length }));
+      }} />
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input

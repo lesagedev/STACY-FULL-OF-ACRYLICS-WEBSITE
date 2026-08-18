@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
             include: { category: true },
           },
           projectImages: {
-            include: { project: true },
+            include: { project: { select: { id: true, name: true } } },
           },
         },
         orderBy: { createdAt: "desc" },

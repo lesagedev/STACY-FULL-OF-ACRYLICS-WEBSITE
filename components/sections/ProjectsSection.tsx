@@ -29,7 +29,9 @@ export function ProjectsSection() {
     fetch("/api/projects", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
-        setProjects(data);
+        if (Array.isArray(data)) {
+          setProjects(data);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));

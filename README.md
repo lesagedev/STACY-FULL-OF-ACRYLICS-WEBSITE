@@ -16,6 +16,12 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Image uploads
+
+Set `BLOB_READ_WRITE_TOKEN` in the deployment environment before using the admin image upload. New uploads are stored in Vercel Blob and their URLs are saved in the database.
+
+Prisma commands use `dev.db` by default. Set `PRISMA_MIGRATION_DATABASE_URL` explicitly when applying a migration to a staging database. Do not point it at production until the staging result has been reviewed.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

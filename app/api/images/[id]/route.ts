@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { hasLimitImagesColumn } from "@/lib/limit-images";
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +12,9 @@ export async function GET(
       where: { id },
       include: {
         categories: { include: { category: true } },
-        projectImages: { include: { project: true } },
+        projectImages: {
+          include: { project: { select: { id: true, name: true } } },
+        },
       },
     });
 
@@ -53,6 +56,16 @@ export async function PUT(
     }
 
     if (projectIds !== undefined) {
+      if (await hasLimitImagesColumn()) {
+        const limitedProjects = await prisma.project.findMany({
+          where: { id: { in: projectIds }, limitImages: true },
+          include: { images: true },
+        });
+        const fullProject = limitedProjects.find((project) => project.images.length > 2 || (project.images.length === 2 && !project.images.some((image) => image.imageId === id)));
+        if (fullProject) {
+          return NextResponse.json({ error: "Un projet ne peut contenir que 2 images maximum" }, { status: 400 });
+        }
+      }
       await prisma.projectImage.deleteMany({ where: { imageId: id } });
       if (projectIds.length > 0) {
         await prisma.projectImage.createMany({
@@ -72,7 +85,9 @@ export async function PUT(
       },
       include: {
         categories: { include: { category: true } },
-        projectImages: { include: { project: true } },
+        projectImages: {
+          include: { project: { select: { id: true, name: true } } },
+        },
       },
     });
 

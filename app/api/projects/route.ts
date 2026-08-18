@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getProjectSelect, hasLimitImagesColumn } from "@/lib/limit-images";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
     const projects = await prisma.project.findMany({
-      include: {
-        images: {
-          include: { image: true },
-          orderBy: { order: "asc" },
-        },
-      },
+      select: await getProjectSelect(true),
       orderBy: { createdAt: "desc" },
     });
 
@@ -31,10 +27,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nom requis" }, { status: 400 });
     }
 
+    if (imageIds?.length > 2) {
+      return NextResponse.json({ error: "Un nouveau projet ne peut contenir que 2 images maximum" }, { status: 400 });
+    }
+
     const project = await prisma.project.create({
       data: {
         name,
         description: description || "",
+        ...(await hasLimitImagesColumn() ? { limitImages: true } : {}),
         images: imageIds?.length
           ? {
               create: imageIds.map((imageId: string, index: number) => ({
@@ -44,12 +45,7 @@ export async function POST(request: NextRequest) {
             }
           : undefined,
       },
-      include: {
-        images: {
-          include: { image: true },
-          orderBy: { order: "asc" },
-        },
-      },
+      select: await getProjectSelect(true),
     });
 
     return NextResponse.json(project, { status: 201 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getProjectSelect, hasLimitImagesColumn } from "@/lib/limit-images";
 
 export async function GET(
   request: NextRequest,
@@ -9,12 +10,7 @@ export async function GET(
     const { id } = await params;
     const project = await prisma.project.findUnique({
       where: { id },
-      include: {
-        images: {
-          include: { image: true },
-          orderBy: { order: "asc" },
-        },
-      },
+      select: await getProjectSelect(true),
     });
 
     if (!project) {
@@ -40,12 +36,20 @@ export async function PUT(
     const body = await request.json();
     const { name, description, imageIds } = body;
 
-    const project = await prisma.project.findUnique({ where: { id } });
+    const limitImagesEnabled = await hasLimitImagesColumn();
+    const project = await prisma.project.findUnique({
+      where: { id },
+      select: await getProjectSelect(true),
+    });
     if (!project) {
       return NextResponse.json(
         { error: "Projet non trouvé" },
         { status: 404 }
       );
+    }
+
+    if (imageIds && limitImagesEnabled && (project as { limitImages?: boolean }).limitImages && imageIds.length > 2) {
+      return NextResponse.json({ error: "Ce nouveau projet ne peut contenir que 2 images maximum" }, { status: 400 });
     }
 
     if (imageIds) {
@@ -67,12 +71,7 @@ export async function PUT(
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
       },
-      include: {
-        images: {
-          include: { image: true },
-          orderBy: { order: "asc" },
-        },
-      },
+      select: await getProjectSelect(true),
     });
 
     return NextResponse.json(updated);
