@@ -93,7 +93,14 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.image.delete({ where: { id } });
+    const image = await prisma.image.findUnique({ where: { id } });
+    if (!image) {
+      return NextResponse.json({ error: "Image non trouvée" }, { status: 404 });
+    }
+    await prisma.image.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting image:", error);

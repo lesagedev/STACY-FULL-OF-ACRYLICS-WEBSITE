@@ -15,6 +15,39 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case "delete": {
+        await prisma.image.updateMany({
+          where: { id: { in: imageIds } },
+          data: { deletedAt: new Date() },
+        });
+        return NextResponse.json({
+          success: true,
+          deleted: imageIds.length,
+        });
+      }
+
+      case "restore": {
+        await prisma.image.updateMany({
+          where: { id: { in: imageIds } },
+          data: { deletedAt: null },
+        });
+        return NextResponse.json({
+          success: true,
+          restored: imageIds.length,
+        });
+      }
+
+      case "permanentDelete": {
+        const images = await prisma.image.findMany({
+          where: { id: { in: imageIds } },
+          select: { id: true, src: true },
+        });
+        const blobUrls = images
+          .map((img) => img.src)
+          .filter((src) => /^https:\/\//.test(src));
+        if (blobUrls.length > 0) {
+          const { del } = await import("@vercel/blob");
+          await del(blobUrls).catch(() => undefined);
+        }
         await prisma.image.deleteMany({
           where: { id: { in: imageIds } },
         });

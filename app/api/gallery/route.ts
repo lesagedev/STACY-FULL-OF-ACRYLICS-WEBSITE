@@ -7,12 +7,21 @@ export async function GET() {
   try {
     const categories = await prisma.category.findMany({
       where: { slug: { not: "archive" } },
-      include: { _count: { select: { images: true } } },
+      include: {
+        _count: {
+          select: {
+            images: { where: { image: { deletedAt: null } } },
+          },
+        },
+      },
       orderBy: { name: "asc" },
     });
 
     const images = await prisma.image.findMany({
-      where: { categories: { none: { category: { slug: "archive" } } } },
+      where: {
+        deletedAt: null,
+        categories: { none: { category: { slug: "archive" } } },
+      },
       include: {
         categories: { include: { category: true } },
       },

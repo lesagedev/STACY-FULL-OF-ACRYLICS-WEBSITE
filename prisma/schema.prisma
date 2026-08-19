@@ -7,17 +7,19 @@ datasource db {
 }
 
 model Image {
-  id          String   @id @default(cuid())
-  src         String   @unique
-  alt         String   @default("")
-  description String   @default("")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String    @id @default(cuid())
+  src         String    @unique
+  alt         String    @default("")
+  description String    @default("")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
   categories    ImageCategory[]
   projectImages ProjectImage[]
 
   @@index([src])
+  @@index([deletedAt])
 }
 
 model Category {

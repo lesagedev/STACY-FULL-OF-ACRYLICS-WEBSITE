@@ -9,10 +9,17 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search") || "";
     const categoryId = searchParams.get("categoryId") || "";
     const projectId = searchParams.get("projectId") || "";
+    const deleted = searchParams.get("deleted") === "1";
 
     const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
+
+    if (deleted) {
+      where.deletedAt = { not: null };
+    } else {
+      where.deletedAt = null;
+    }
 
     if (search) {
       where.OR = [

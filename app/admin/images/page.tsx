@@ -47,6 +47,7 @@ export default function ImagesPage() {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterProject, setFilterProject] = useState("");
+  const [showTrash, setShowTrash] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editingImage, setEditingImage] = useState<Image | null>(null);
   const [editAlt, setEditAlt] = useState("");
@@ -57,6 +58,7 @@ export default function ImagesPage() {
   const fetchImages = useCallback(async (page = 1) => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), limit: "50" });
+    if (showTrash) params.set("deleted", "1");
     if (search) params.set("search", search);
     if (filterCategory) params.set("categoryId", filterCategory);
     if (filterProject) params.set("projectId", filterProject);
@@ -65,7 +67,7 @@ export default function ImagesPage() {
     setImages(data.images);
     setPagination(data.pagination);
     setLoading(false);
-  }, [search, filterCategory, filterProject]);
+  }, [search, filterCategory, filterProject, showTrash]);
 
   useEffect(() => {
     fetch("/api/categories").then((r) => r.json()).then((data) => setCategories(Array.isArray(data) ? data : []));
@@ -195,6 +197,54 @@ export default function ImagesPage() {
     );
   };
 
+  const handleBulkRestore = async () => {
+    if (selected.size === 0) return;
+    const ids = [...selected];
+    const result = await postBulk({ action: "restore", imageIds: ids });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
+    setImages((prev) => prev.filter((img) => !ids.includes(img.id)));
+    setSelected(new Set());
+    setPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - ids.length) }));
+  };
+
+  const handleBulkPermanentDelete = async () => {
+    if (selected.size === 0) return;
+    const ids = [...selected];
+    if (!confirm(`Supprimer définitivement ${ids.length} image(s) ? Cette action est irréversible.`)) return;
+    const result = await postBulk({ action: "permanentDelete", imageIds: ids });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
+    setImages((prev) => prev.filter((img) => !ids.includes(img.id)));
+    setSelected(new Set());
+    setPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - ids.length) }));
+  };
+
+  const restoreImage = async (id: string) => {
+    const result = await postBulk({ action: "restore", imageIds: [id] });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
+    setImages((prev) => prev.filter((img) => img.id !== id));
+    setPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+  };
+
+  const permanentDeleteImage = async (id: string) => {
+    if (!confirm("Supprimer définitivement cette image ? Cette action est irréversible.")) return;
+    const result = await postBulk({ action: "permanentDelete", imageIds: [id] });
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
+    setImages((prev) => prev.filter((img) => img.id !== id));
+    setPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+  };
+
   const openEdit = (img: Image) => {
     setEditingImage(img);
     setEditAlt(img.alt);
@@ -239,10 +289,12 @@ export default function ImagesPage() {
         Images
       </h1>
 
-      <ImageUpload categories={categories} onUploaded={(uploaded) => {
-        setImages((current) => [...uploaded.map((image) => ({ ...image, description: "", categories: [], projectImages: [] })), ...current]);
-        setPagination((current) => ({ ...current, total: current.total + uploaded.length }));
-      }} />
+      {!showTrash && (
+        <ImageUpload categories={categories} onUploaded={(uploaded) => {
+          setImages((current) => [...uploaded.map((image) => ({ ...image, description: "", categories: [], projectImages: [] })), ...current]);
+          setPagination((current) => ({ ...current, total: current.total + uploaded.length }));
+        }} />
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
@@ -272,6 +324,15 @@ export default function ImagesPage() {
             <option key={proj.id} value={proj.id}>{proj.name}</option>
           ))}
         </select>
+        <button
+          onClick={() => {
+            setShowTrash(!showTrash);
+            setSelected(new Set());
+          }}
+          className={`px-4 py-2.5 rounded-xl text-sm transition-colors ${showTrash ? "bg-[#C9A84C] text-black font-semibold" : "bg-white/5 text-white/70 hover:bg-white/10"}`}
+        >
+          {showTrash ? "Retour aux images" : "Corbeille"}
+        </button>
       </div>
 
       {selected.size > 0 && (
@@ -280,50 +341,71 @@ export default function ImagesPage() {
             <span className="text-[#C9A84C] text-sm font-medium">
               {selected.size} sélectionnée(s)
             </span>
-            <button
-              onClick={handleBulkDelete}
-              className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm hover:bg-red-500/30"
-            >
-              Supprimer
-            </button>
+            {showTrash ? (
+              <>
+                <button
+                  onClick={handleBulkRestore}
+                  className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs sm:text-sm hover:bg-emerald-500/30"
+                >
+                  Restaurer
+                </button>
+                <button
+                  onClick={handleBulkPermanentDelete}
+                  className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm hover:bg-red-500/30"
+                >
+                  Supprimer définitivement
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleBulkDelete}
+                className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm hover:bg-red-500/30"
+              >
+                Supprimer
+              </button>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {categories.map((cat) => (
-              <div key={cat.id} className="flex gap-1">
-                <button
-                  onClick={() => handleBulkAddCategory(cat.id)}
-                  className="px-2.5 py-1.5 bg-white/5 text-white/70 rounded-lg text-xs hover:bg-white/10"
-                >
-                  + {cat.name}
-                </button>
-                <button
-                  onClick={() => handleBulkRemoveCategory(cat.id)}
-                  className="px-2.5 py-1.5 bg-white/5 text-white/40 rounded-lg text-xs hover:bg-white/10"
-                >
-                  − {cat.name}
-                </button>
+          {!showTrash && (
+            <>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {categories.map((cat) => (
+                  <div key={cat.id} className="flex gap-1">
+                    <button
+                      onClick={() => handleBulkAddCategory(cat.id)}
+                      className="px-2.5 py-1.5 bg-white/5 text-white/70 rounded-lg text-xs hover:bg-white/10"
+                    >
+                      + {cat.name}
+                    </button>
+                    <button
+                      onClick={() => handleBulkRemoveCategory(cat.id)}
+                      className="px-2.5 py-1.5 bg-white/5 text-white/40 rounded-lg text-xs hover:bg-white/10"
+                    >
+                      − {cat.name}
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          {projects.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {projects.map((proj) => (
-                <div key={proj.id} className="flex gap-1">
-                  <button
-                    onClick={() => handleBulkAddProject(proj.id)}
-                    className="px-2.5 py-1.5 bg-[#C9A84C]/10 text-[#C9A84C]/80 rounded-lg text-xs hover:bg-[#C9A84C]/20"
-                  >
-                    + {proj.name}
-                  </button>
-                  <button
-                    onClick={() => handleBulkRemoveProject(proj.id)}
-                    className="px-2.5 py-1.5 bg-[#C9A84C]/10 text-[#C9A84C]/50 rounded-lg text-xs hover:bg-[#C9A84C]/20"
-                  >
-                    − {proj.name}
-                  </button>
+              {projects.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {projects.map((proj) => (
+                    <div key={proj.id} className="flex gap-1">
+                      <button
+                        onClick={() => handleBulkAddProject(proj.id)}
+                        className="px-2.5 py-1.5 bg-[#C9A84C]/10 text-[#C9A84C]/80 rounded-lg text-xs hover:bg-[#C9A84C]/20"
+                      >
+                        + {proj.name}
+                      </button>
+                      <button
+                        onClick={() => handleBulkRemoveProject(proj.id)}
+                        className="px-2.5 py-1.5 bg-[#C9A84C]/10 text-[#C9A84C]/50 rounded-lg text-xs hover:bg-[#C9A84C]/20"
+                      >
+                        − {proj.name}
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -383,18 +465,37 @@ export default function ImagesPage() {
                   ))}
                 </div>
                 <div className="flex gap-1">
-                  <button
-                    onClick={() => openEdit(img)}
-                    className="flex-1 px-2 py-1 bg-white/10 text-white rounded text-[10px] sm:text-xs hover:bg-white/20"
-                  >
-                    Modifier
-                  </button>
-                  <button
-                    onClick={() => deleteImage(img.id)}
-                    className="flex-1 px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] sm:text-xs hover:bg-red-500/30"
-                  >
-                    Supprimer
-                  </button>
+                  {showTrash ? (
+                    <>
+                      <button
+                        onClick={() => restoreImage(img.id)}
+                        className="flex-1 px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] sm:text-xs hover:bg-emerald-500/30"
+                      >
+                        Restaurer
+                      </button>
+                      <button
+                        onClick={() => permanentDeleteImage(img.id)}
+                        className="flex-1 px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] sm:text-xs hover:bg-red-500/30"
+                      >
+                        Suppr. définitivement
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => openEdit(img)}
+                        className="flex-1 px-2 py-1 bg-white/10 text-white rounded text-[10px] sm:text-xs hover:bg-white/20"
+                      >
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => deleteImage(img.id)}
+                        className="flex-1 px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] sm:text-xs hover:bg-red-500/30"
+                      >
+                        Supprimer
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
